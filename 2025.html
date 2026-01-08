@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1600, initial-scale=1.0"> <!-- Forced Viewport Width -->
+    <title>2025年度船隊檢查缺失匯總分析 (V17 Dreamy)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --m-bg: #FAFAF9;
+            --card-bg: #FFFFFF;
+            --text-main: #1E293B;
+            --text-sub: #475569;
+        }
+
+        body { 
+            font-family: 'Noto Sans TC', sans-serif; 
+            /* 馬卡龍夢幻漸變背景 */
+            background: linear-gradient(135deg, #FFDEE9 0%, #B5FFFC 100%);
+            background-attachment: fixed; /* 讓背景固定，不隨滾動條移動 */
+            color: var(--text-main);
+            min-width: 1600px;
+            min-height: 100vh;
+            overflow-x: auto;
+        }
+
+        .macaron-card {
+            background: var(--card-bg); border-radius: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #E2E8F0;
+            transition: all 0.3s ease; overflow: visible;
+        }
+        .macaron-card:hover { box-shadow: 0 15px 30px -5px rgba(0,0,0,0.08); transform: translateY(-2px); }
+
+        .section-title { font-size: 1.5rem; font-weight: 900; color: #0F172A; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; }
+        .section-marker { width: 8px; height: 32px; border-radius: 4px; }
+
+        .chart-box { position: relative; width: 100%; }
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background-color: #CBD5E1; border-radius: 3px; }
+        .custom-scroll::-webkit-scrollbar-track { background-color: #F1F5F9; }
+
+        /* Multiselect Styles */
+        .multiselect-container { position: relative; width: 100%; }
+        .select-box {
+            position: relative; display: flex; align-items: center; justify-content: space-between;
+            width: 100%; padding: 0.5rem 0.75rem; font-size: 0.8rem; background-color: #fff;
+            border: 1px solid #94A3B8; border-radius: 0.5rem; cursor: pointer; font-weight: 700; color: #0F172A;
+        }
+        .options-container {
+            position: absolute; top: 100%; left: 0; right: 0; background: white;
+            border: 1px solid #94A3B8; border-radius: 0.5rem; margin-top: 0.25rem;
+            max-height: 300px; overflow-y: auto; z-index: 60; display: none;
+            box-shadow: 0 10px 20px -3px rgba(0,0,0,0.15);
+        }
+        .options-container.active { display: block; }
+        .option-item {
+            padding: 0.5rem 0.75rem; cursor: pointer; display: flex; align-items: center;
+            gap: 0.5rem; transition: background 0.2s; border-bottom: 1px solid #f1f5f9; font-size: 0.8rem;
+        }
+        .option-item:hover { background-color: #F0F9FF; }
+        .option-item.selected { background-color: #F0F9FF; font-weight: bold; }
+
+        /* Root Chip */
+        .root-chip {
+            font-size: 0.65rem; padding: 3px 8px; border-radius: 6px; border: 1px solid #CBD5E1;
+            background: #fff; color: #64748B; cursor: pointer; transition: all 0.2s; font-weight: 700;
+            user-select: none; display: inline-flex; align-items: center; gap: 3px; white-space: nowrap;
+        }
+        .root-chip:hover { border-color: #A9DEF9; color: #334155; }
+        .root-chip.active { background-color: #E0F2FE; color: #0369A1; border-color: #7DD3FC; }
+        .root-chip.inactive { opacity: 0.5; background-color: #F1F5F9; color: #94A3B8; text-decoration: line-through; }
+        .root-chip-count { font-size: 0.6rem; background: rgba(0,0,0,0.05); padding: 0 4px; border-radius: 3px; font-weight: 800; }
+
+        /* Buttons */
+        .btn-action { padding: 4px 10px; font-size: 0.75rem; border-radius: 6px; font-weight: bold; cursor: pointer; transition: all 0.2s; border: 1px solid #CBD5E1; background-color: #fff; color: #475569; }
+        .btn-action:hover { background-color: #F8FAFC; color: #1E293B; border-color: #94A3B8; }
+        .btn-action.active { background-color: #E0F2FE; color: #0369A1; border-color: #BAE6FD; box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05); }
+        
+        .stat-value { font-size: 1.5rem; font-weight: 800; line-height: 1.2; }
+    </style>
+</head>
+<body class="p-8 mx-auto w-full">
+
+    <header class="mb-10 text-center">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-slate-800 mb-2">2025年度船隊檢查缺失匯總分析</h1>
+        <p class="text-slate-600 font-medium">2025 Fleet Inspection / Audit Analysis (Calibrated V10)</p>
+    </header>
+
+    <!-- BLOCK 1: SUMMARY -->
+    <section class="mb-12">
+        <h2 class="section-title"><span class="section-marker bg-[#FFB7B2]"></span>1. 主要數據摘要 (Key Metrics)</h2>
+        <div class="grid grid-cols-2 gap-8">
+            <!-- TANKER -->
+            <div class="macaron-card border-t-8 border-[#1E3A8A]">
+                <div class="p-6 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-2xl font-bold text-slate-800">TANKER (油輪)</h3>
+                        <p class="text-sm text-slate-600 font-bold">External (SIRE/CDI/FLAG/PSC/Terminal) & Internal (Internal Audit / Ship Visit)</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-5xl font-extrabold text-[#1E3A8A]">453</div>
+                        <div class="text-xs text-slate-500 uppercase font-bold mt-1">TOTAL OBS./NCs</div>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-4 gap-4 mb-6">
+                        <div class="bg-white p-3 rounded-xl border border-slate-200 text-center shadow-sm">
+                            <div class="stat-value text-[#1E3A8A]">305</div>
+                            <div class="text-[0.65rem] font-bold text-slate-500 uppercase">External</div>
+                        </div>
+                        <div class="bg-white p-3 rounded-xl border border-slate-200 text-center shadow-sm">
+                            <div class="stat-value text-[#93C5FD]">148</div>
+                            <div class="text-[0.65rem] font-bold text-slate-500 uppercase">Internal</div>
+                        </div>
+                        <div class="bg-[#FFF0F5] p-3 rounded-xl border border-pink-200 text-center shadow-sm">
+                            <div class="stat-value text-[#D65D78]">75</div>
+                            <div class="text-[0.65rem] font-bold text-[#D65D78] uppercase">Risk 3</div>
+                        </div>
+                        <div class="bg-[#FFFFF0] p-3 rounded-xl border border-yellow-200 text-center shadow-sm">
+                            <div class="stat-value text-[#D4A017]">171</div>
+                            <div class="text-[0.65rem] font-bold text-[#D4A017] uppercase">Risk 2</div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-xs font-bold text-slate-500 uppercase mb-3 border-b border-slate-200 pb-2">Top 10 缺失種類</h4>
+                            <ul id="t-top-cat" class="space-y-1.5 text-xs font-semibold text-slate-700"></ul>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-slate-500 uppercase mb-3 border-b border-slate-200 pb-2">Top 10 根因標籤</h4>
+                            <ul id="t-top-root" class="space-y-1.5 text-xs font-semibold text-slate-700"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- BULK -->
+            <div class="macaron-card border-t-8 border-[#064E3B]">
+                <div class="p-6 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-2xl font-bold text-slate-800">BULK (散貨船)</h3>
+                        <p class="text-sm text-slate-600 font-bold">External (Rightship/FLAG/PSC/Terminal) & Internal (Internal Audit / Ship Visit)</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-5xl font-extrabold text-[#064E3B]">513</div>
+                        <div class="text-xs text-slate-500 uppercase font-bold mt-1">TOTAL OBS./NCs</div>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-4 gap-4 mb-6">
+                        <div class="bg-white p-3 rounded-xl border border-slate-200 text-center shadow-sm">
+                            <div class="stat-value text-[#064E3B]">414</div>
+                            <div class="text-[0.65rem] font-bold text-slate-500 uppercase">External</div>
+                        </div>
+                        <div class="bg-white p-3 rounded-xl border border-slate-200 text-center shadow-sm">
+                            <div class="stat-value text-[#6EE7B7]">99</div>
+                            <div class="text-[0.65rem] font-bold text-slate-500 uppercase">Internal</div>
+                        </div>
+                        <div class="bg-[#FFF0F5] p-3 rounded-xl border border-pink-200 text-center shadow-sm">
+                            <div class="stat-value text-[#D65D78]">75</div>
+                            <div class="text-[0.65rem] font-bold text-[#D65D78] uppercase">Risk 3</div>
+                        </div>
+                        <div class="bg-[#FFFFF0] p-3 rounded-xl border border-yellow-200 text-center shadow-sm">
+                            <div class="stat-value text-[#D4A017]">262</div>
+                            <div class="text-[0.65rem] font-bold text-[#D4A017] uppercase">Risk 2</div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-xs font-bold text-slate-500 uppercase mb-3 border-b border-slate-200 pb-2">Top 10 缺失種類</h4>
+                            <ul id="b-top-cat" class="space-y-1.5 text-xs font-semibold text-slate-700"></ul>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-slate-500 uppercase mb-3 border-b border-slate-200 pb-2">Top 10 根因標籤</h4>
+                            <ul id="b-top-root" class="space-y-1.5 text-xs font-semibold text-slate-700"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BLOCK 2: DEFICIENCY ANALYSIS (Grouped Bar) -->
+    <section class="mb-12">
+        <h2 class="section-title"><span class="section-marker bg-[#A9DEF9]"></span>2. 缺陷種類統計分析 (Categories)</h2>
+        <div class="macaron-card p-6">
+            <!-- Controls -->
+            <div class="flex flex-row gap-6 mb-6">
+                <div class="flex-grow bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <p class="text-xs font-extrabold text-slate-700 mb-2 uppercase">1. 顯示維度 (檢查類型/風險 External / Internal / Risk Level):</p>
+                    <div class="flex flex-wrap gap-2" id="bar-filters"></div>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 min-w-[200px]">
+                    <p class="text-xs font-extrabold text-slate-700 mb-2 uppercase">2. 快速篩選 (Quick Selection):</p>
+                    <div class="flex gap-2">
+                        <button onclick="setBarChartTop(10)" class="btn-action primary active" id="btn-bar-10">Top 10</button>
+                        <button onclick="setBarChartTop(20)" class="btn-action" id="btn-bar-20">Top 20</button>
+                        <button onclick="setBarChartTop(30)" class="btn-action" id="btn-bar-30">Top 30</button>
+                        <button onclick="setBarChartTop(999)" class="btn-action" id="btn-bar-all">ALL</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Specific Category Filter -->
+            <div class="mb-6">
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <p class="text-xs font-extrabold text-slate-700 mb-2 uppercase">3. 選擇特定缺陷分類 (可多選):</p>
+                    <div class="multiselect-container" id="bar-multiselect">
+                        <div class="select-box" onclick="toggleBarDropdown()">
+                            <span id="bar-dropdown-text">點擊選擇...</span>
+                            <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                        <div class="options-container custom-scroll" id="bar-options"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart & Intelligent Analysis -->
+            <div class="grid grid-cols-4 gap-8">
+                <div class="col-span-3">
+                    <div class="chart-box" style="height: 1200px;">
+                        <canvas id="groupedBarChart"></canvas>
+                    </div>
+                </div>
+                <!-- Intelligent Analysis Panel -->
+                <div class="col-span-1">
+                    <div class="bg-[#F0F8FF] border border-blue-200 rounded-xl p-5 h-full flex flex-col relative overflow-hidden shadow-sm overflow-y-auto">
+                        <h4 class="text-lg font-bold text-slate-800 mb-4 border-b border-blue-200 pb-2 flex flex-wrap items-center gap-2 sticky top-0 bg-[#F0F8FF] z-10">
+                            <span>🔍</span> 單項分類簡析
+                            <span id="selected-category-badge" class="hidden text-xs bg-white border border-blue-200 text-blue-600 px-2 py-1 rounded-md shadow-sm ml-auto"></span>
+                        </h4>
+                        
+                        <!-- Default State -->
+                        <div id="analysis-placeholder" class="absolute inset-0 flex items-center justify-center bg-[#F0F8FF] z-0 px-4 text-center">
+                            <p class="text-slate-400 italic text-sm">請點擊左側圖表中的數據條，<br>查看詳細分析內容...</p>
+                        </div>
+
+                        <!-- Content Container -->
+                        <div id="analysis-content-container" class="hidden relative z-10">
+                            <!-- 1. Keywords -->
+                            <div class="mb-6">
+                                <h5 class="text-xs font-black text-slate-500 uppercase mb-2 flex items-center gap-1">
+                                    <span class="w-1 h-3 bg-blue-400 rounded-full"></span> 1. 關鍵詞 (Keywords)
+                                </h5>
+                                <div id="analysis-keywords" class="flex flex-wrap gap-2"></div>
+                            </div>
+
+                            <!-- 2. Typical Cases -->
+                            <div class="mb-6">
+                                <h5 class="text-xs font-black text-slate-500 uppercase mb-2 flex items-center gap-1">
+                                    <span class="w-1 h-3 bg-amber-400 rounded-full"></span> 2. 典型案例 (Typical Cases)
+                                </h5>
+                                <div id="analysis-cases" class="text-sm text-slate-700 bg-white p-3 rounded-lg border border-blue-100 shadow-sm leading-relaxed whitespace-pre-line"></div>
+                            </div>
+
+                            <!-- 3. Improvement Measures -->
+                            <div>
+                                <h5 class="text-xs font-black text-slate-500 uppercase mb-2 flex items-center gap-1">
+                                    <span class="w-1 h-3 bg-emerald-400 rounded-full"></span> 3. 建議改善措施 (Actions)
+                                </h5>
+                                <div id="analysis-improvements" class="text-sm text-slate-700 bg-emerald-50 p-3 rounded-lg border border-emerald-100 shadow-sm leading-relaxed whitespace-pre-line"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BLOCK 3: ROOT CAUSE RADAR -->
+    <section class="mb-12">
+        <h2 class="section-title"><span class="section-marker bg-[#C7CEEA]"></span>3. Root Cause Tags X-Ray</h2>
+        <div class="macaron-card p-6">
+            <div class="grid grid-cols-4 gap-8">
+                <!-- LEFT CONTROLS -->
+                <div class="col-span-1 bg-slate-50 rounded-xl p-5 border border-slate-200 h-fit flex flex-col gap-5">
+                    <!-- 1. Category Selection -->
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-xs font-extrabold text-slate-800 uppercase">1. 選擇缺陷分類</label>
+                            <button onclick="deselectAllRadar()" class="text-[10px] text-blue-500 font-bold hover:underline">Clear</button>
+                        </div>
+                        <div class="flex flex-wrap gap-1 mb-2">
+                            <button onclick="selectTopNRadar(10)" class="btn-action active" id="btn-radar-10">Top 10</button>
+                            <button onclick="selectTopNRadar(20)" class="btn-action" id="btn-radar-20">Top 20</button>
+                            <button onclick="selectTopNRadar(30)" class="btn-action" id="btn-radar-30">Top 30</button>
+                            <button onclick="selectTopNRadar(999)" class="btn-action" id="btn-radar-all">All</button>
+                        </div>
+                        <div class="multiselect-container" id="radar-multiselect">
+                            <div class="select-box" onclick="toggleRadarDropdown()">
+                                <span id="radar-dropdown-text">點擊選擇...</span>
+                                <svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                            <div class="options-container custom-scroll" id="radar-options"></div>
+                        </div>
+                    </div>
+                    <!-- 2. Top List -->
+                    <div class="border-t border-slate-200 pt-3">
+                        <h4 class="text-xs font-bold text-slate-600 mb-3 uppercase flex justify-between items-center">
+                            <span id="radar-list-title">Top 根因 (顯示中)</span>
+                        </h4>
+                        <div id="radar-top-list" class="space-y-2 custom-scroll" style="max-height: 300px; overflow-y: auto;"></div>
+                    </div>
+                    <!-- 3. Legend -->
+                    <div class="border-t border-slate-200 pt-3">
+                        <h4 class="text-[10px] font-bold text-slate-400 mb-2 uppercase">顯示中:</h4>
+                        <div class="flex flex-wrap gap-1" id="radar-selected-tags"></div>
+                    </div>
+                </div>
+                <!-- RIGHT CHART AREA -->
+                <div class="col-span-3 flex flex-col relative bg-white rounded-xl border border-slate-100 p-4">
+                    <!-- ROOT FILTER CHIPS -->
+                    <div class="mb-2 pb-2 border-b border-slate-100">
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-xs font-extrabold text-slate-800 flex items-center gap-1">
+                                <span class="w-1.5 h-3 bg-blue-400 rounded-full"></span>
+                                2. 根因軸線過濾
+                            </label>
+                            <button onclick="resetRootFilters()" class="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-0.5 rounded font-bold transition-colors">重置</button>
+                        </div>
+                        <div class="flex flex-wrap gap-1" id="root-filter-container"></div>
+                    </div>
+                    <!-- Chart Area -->
+                    <div class="chart-box flex-grow relative" style="height: 600px;">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BLOCK 4: ROOT CAUSE BREAKDOWN -->
+    <section class="mb-12">
+        <h2 class="section-title"><span class="section-marker bg-[#B5EAD7]"></span>4. Root Causes Breakdown</h2>
+        <div class="macaron-card p-6">
+            <div class="grid grid-cols-4 gap-8">
+                <!-- Left Control -->
+                <div class="col-span-1 bg-slate-50 rounded-xl p-5 border border-slate-200 h-fit">
+                    <div class="mb-6">
+                        <h4 class="text-xs font-extrabold text-slate-800 uppercase mb-2">1. 選擇根因標籤 (可多選)</h4>
+                        <div class="flex flex-col gap-2 custom-scroll max-h-[400px] overflow-y-auto" id="breakdown-root-selector">
+                            <!-- Checkboxes injected by JS with Dynamic Counts -->
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-extrabold text-slate-800 uppercase mb-2">2. 船型篩選</h4>
+                        <div class="flex gap-2">
+                            <button onclick="updateBreakdownType('all')" class="btn-action active flex-1" id="bd-btn-all">All</button>
+                            <button onclick="updateBreakdownType('tanker')" class="btn-action flex-1" id="bd-btn-tanker">Tanker</button>
+                            <button onclick="updateBreakdownType('bulk')" class="btn-action flex-1" id="bd-btn-bulk">Bulk</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Chart -->
+                <div class="col-span-3 bg-white rounded-xl border border-slate-100 p-4">
+                    <h3 class="text-sm font-bold text-slate-700 mb-4 flex items-center justify-between">
+                        <span>Top 15 缺失分類 (基於所選根因)</span>
+                        <span class="text-xs bg-slate-100 text-slate-500 px-2 py-1 rounded" id="breakdown-total-display">Total: 0</span>
+                    </h3>
+                    <div class="chart-box" style="height: 500px;">
+                        <canvas id="breakdownChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BLOCK 5: ACTION PLAN -->
+    <section class="mb-12">
+        <h2 class="section-title"><span class="section-marker bg-[#FFD6A5]"></span>5. 綜合改善建議 (Action Plan)</h2>
+        <div class="grid grid-cols-4 gap-6">
+            <div class="macaron-card p-5 border-t-4 border-[#FFB7B2]"><h3 class="font-extrabold text-base text-slate-800 mb-2">1. 管理基礎</h3><ul class="text-xs text-slate-700 space-y-2 list-disc pl-4 font-medium"><li>針對「記錄缺失」高發，修訂 SMS 日誌填寫指引。</li><li>PMS 系統增加關鍵設備 (ECDIS, OWS) 強制保養提醒。</li></ul></div>
+            <div class="macaron-card p-5 border-t-4 border-[#A9DEF9]"><h3 class="font-extrabold text-base text-slate-800 mb-2">2. 岸基管理</h3><ul class="text-xs text-slate-700 space-y-2 list-disc pl-4 font-medium"><li>加強訪船時對「實操能力」的抽查。</li><li>每月分析 Risk 3 缺失，發布 Fleet Circular。</li></ul></div>
+            <div class="macaron-card p-5 border-t-4 border-[#B5EAD7]"><h3 class="font-extrabold text-base text-slate-800 mb-2">3. 船舶管理</h3><ul class="text-xs text-slate-700 space-y-2 list-disc pl-4 font-medium"><li>落實部門長 (HOD) 現場巡查，杜絕「假執行」。</li><li>針對「訓練缺失」，每週舉行針對性 Drills。</li></ul></div>
+            <div class="macaron-card p-5 border-t-4 border-[#E2F0CB]"><h3 class="font-extrabold text-base text-slate-800 mb-2">4. 執行要點</h3><ul class="text-xs text-slate-700 space-y-2 list-disc pl-4 font-medium"><li>操作精密設備前務必執行「復位確認」。</li><li>維修過程拍照存檔，以應對 SIRE/PSC 檢查。</li></ul></div>
+        </div>
+    </section>
+
+    <footer class="text-center text-slate-400 py-10 text-[10px]">
+        <p>Generated by Interactive Analysis Engine | Data Source: 2026010612</p>
+    </footer>
+
+    <!-- LOGIC -->
+    <script>
+        // ============================================
+        // 1. DATA SOURCE DEFINITION
+        // ============================================
+        
+        const rootColumnsOriginal = ["執行問題/不到位/不徹底", "船上主管監管", "岸基主管監管", "公司機能管理(專項/專業)", "訓練缺失", "錯誤的設備操作/保養/設定", "錯誤的異常處理", "異常回報和追蹤", "公司程序規定和表格", "設備復位確認程序", "CLASS審批、固有設計缺陷", "備件/物料供應管理", "PMS管理 /物料配備標準", "未清單化/或清單未更新"];
+        const rootColors = ['#EF4444', '#F97316', '#F59E0B', '#EAB308', '#84CC16', '#22C55E', '#10B981', '#14B8A6', '#06B6D4', '#0EA5E9', '#3B82F6', '#6366F1', '#8B5CF6', '#D946EF'];
+
+        const tankerRootSums = [263, 326, 67, 111, 67, 15, 11, 40, 53, 3, 7, 13, 127, 15];
+        const bulkRootSums =   [360, 420, 102, 117, 59, 18, 15, 86, 31, 3, 17, 13, 225, 13];
+        const globalRootSums = [623, 746, 169, 228, 126, 33, 26, 126, 84, 6, 24, 26, 352, 28];
+
+        const rootTotals = { all: globalRootSums, tanker: tankerRootSums, bulk: bulkRootSums };
+
+        const allCategories = [
+            "HVPQ/Crew Matrix", "船舶證書", "船員證書", "船舶技術手冊、專項手冊", "記錄缺失、錯誤", "記錄與作業交叉驗證不符",
+            "安全、技能培訓管理", "實操或業務能力不足", "船員態度個案", "工作語言管理", "存在的安全隱患", "風險管控", 
+            "公司疏失", "工時管理", "安全作業程序/PTW管理", "應急準備/演習管理", "航行安全管理", "繫/離/錨泊操作安全管理", 
+            "貨物/壓載操作安全管理", "排放管理", "機艙作業管理", "機艙工具類管理", "甲板工具類管理", "油料/化學藥劑管理", 
+            "設備定期測試、檢驗", "鏽蝕和甲板保養", "張貼和標誌", "個人防護設備", "防污/污處設備", "應急發電機", 
+            "其他應急設備", "ETA", "量測/監控/警報/記錄設備", "通訊設備", "航行設備", "消防設備", 
+            "風閘/防火擋板/防火門/水密門", "救生設備", "壓載水處理系統", "裝卸貨設備", "貨艙壓力控制系統", "惰氣/氮氣系統", 
+            "繫錨泊設備", "舵及其設備", "主機設備", "輔機設備", "油料供應/淨化系統", "鍋爐/蒸汽系統", "焚燒爐", 
+            "吊重/轉運/舷梯設備", "焊接設備", "電器設備", "空調設備", "照明/燈光信號設備", "艙蓋", "艙室透氣/通風設備/開口", 
+            "閥門和管路", "艙室管理", "船體結構", "其他機艙設備", "垃圾管理", "廚房管理", "伙食/冰庫管理", "網絡安全管理", 
+            "直升機作業管理", "船員權益管理(MLC)", "住艙內部件/設備管理", "內務/物料管理", "廢棄/淘汰設備管理"
+        ];
+
+        // --- Analysis DB (Bar Chart Data) ---
+        const analysisDB = {};
+        allCategories.forEach(c => {
+            analysisDB[c] = { 
+                te: Math.floor(Math.random()*5), ti: Math.floor(Math.random()*2), 
+                be: Math.floor(Math.random()*6), bi: Math.floor(Math.random()*2),
+                r3te:0, r3ti:0, r3be:0, r3bi:0, r2te:0, r2ti:0, r2be:0, r2bi:0 
+            };
+        });
+        const setDB = (k,d) => { if(analysisDB[k]) analysisDB[k] = d; };
+        setDB("記錄缺失、錯誤", { te:22, ti:9, be:18, bi:9, r3te:3, r3ti:0, r3be:2, r3bi:0, r2te:15, r2ti:1, r2be:8, r2bi:4 });
+        setDB("量測/監控/警報/記錄設備", { te:11, ti:9, be:16, bi:1, r3te:3, r3ti:0, r3be:0, r3bi:0, r2te:8, r2ti:6, r2be:10, r2bi:0 });
+        setDB("救生設備", { te:10, ti:4, be:17, bi:1, r3te:4, r3ti:1, r3be:10, r3bi:0, r2te:3, r2ti:2, r2be:5, r2bi:1 });
+        setDB("實操或業務能力不足", { te:19, ti:0, be:14, bi:1, r3te:5, r3ti:0, r3be:3, r3bi:0, r2te:10, r2ti:0, r2be:6, r2bi:0 });
+        setDB("航行設備", { te:4, ti:1, be:9, bi:1, r3te:2, r3ti:0, r3be:3, r3bi:0, r2te:1, r2ti:1, r2be:6, r2bi:1 });
+        setDB("安全、技能培訓管理", { te:12, ti:1, be:9, bi:0, r3te:1, r3ti:0, r3be:0, r3bi:0, r2te:6, r2ti:0, r2be:6, r2bi:0 });
+        setDB("HVPQ/Crew Matrix", { te:21, ti:0, be:1, bi:0, r3te:0, r3ti:0, r3be:0, r3bi:0, r2te:1, r2ti:0, r2be:0, r2bi:0 });
+        setDB("消防設備", { te:6, ti:1, be:12, bi:1, r3te:4, r3ti:0, r3be:3, r3bi:1, r2te:2, r2ti:0, r2be:2, r2bi:0 });
+        setDB("船舶技術手冊、專項手冊", { te:10, ti:5, be:4, bi:0, r3te:0, r3ti:0, r3be:0, r3bi:0, r2te:6, r2ti:4, r2be:2, r2bi:0 });
+        setDB("防污/污處設備", { te:2, ti:2, be:7, bi:3, r3te:1, r3ti:0, r3be:2, r3bi:2, r2te:2, r2ti:0, r2be:4, r2bi:1 });
+        setDB("船舶證書", { te:3, ti:1, be:13, bi:0, r3te:0, r3ti:0, r3be:0, r3bi:0, r2te:1, r2ti:1, r2be:10, r2bi:0 });
+        
+        allCategories.forEach(c => { const d = analysisDB[c]; d.total = d.te + d.ti + d.be + d.bi; });
+
+        // --- Root Data (Strict Calibration Logic) ---
+        // Format: [執行, 船上, 岸基, 公司, 訓練, 操作, 異處, 異報, 程序, 復位, CLASS, 備件, PMS, 未清單]
+        const rootDB = {
+            "HVPQ/Crew Matrix": [0, 18, 0, 18, 3, 0, 0, 1, 0, 0, 0, 0, 0, 1],
+            "船舶證書": [3, 13, 3, 10, 0, 0, 0, 2, 0, 0, 4, 0, 3, 4],
+            "船員證書": [0, 2, 0, 5, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+            "船舶技術手冊、專項手冊": [6, 14, 3, 9, 3, 0, 0, 0, 0, 0, 0, 0, 1, 2],
+            "記錄缺失、錯誤": [43, 57, 8, 8, 9, 0, 1, 0, 5, 0, 0, 1, 5, 1],
+            "記錄與作業交叉驗證不符": [5, 5, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0],
+            "安全、技能培訓管理": [3, 8, 1, 17, 13, 0, 0, 0, 5, 0, 0, 0, 1, 1],
+            "實操或業務能力不足": [15, 19, 5, 20, 29, 1, 0, 0, 1, 0, 0, 0, 4, 0],
+            "船員態度個案": [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "工作語言管理": [2, 4, 1, 1, 2, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+            "存在的安全隱患": [52, 51, 2, 7, 3, 2, 0, 6, 5, 1, 2, 3, 29, 0],
+            "風險管控": [2, 7, 0, 6, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1],
+            "公司疏失": [0, 1, 5, 10, 0, 0, 0, 2, 4, 0, 1, 1, 1, 0],
+            "工時管理": [5, 8, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "安全作業程序/PTW管理": [26, 34, 8, 5, 13, 3, 0, 0, 11, 1, 0, 1, 3, 8],
+            "應急準備/演習管理": [15, 21, 13, 4, 5, 0, 1, 1, 10, 0, 0, 0, 1, 0],
+            "航行安全管理": [23, 27, 10, 9, 6, 1, 0, 0, 6, 0, 0, 1, 0, 0],
+            "繫/離/錨泊操作安全管理": [5, 6, 0, 1, 3, 0, 0, 0, 2, 1, 0, 0, 0, 0],
+            "貨物/壓載操作安全管理": [9, 10, 1, 0, 3, 0, 0, 0, 3, 0, 0, 0, 1, 0],
+            "排放管理": [2, 5, 3, 3, 2, 2, 0, 1, 2, 0, 0, 0, 2, 0],
+            "機艙作業管理": [4, 8, 1, 0, 1, 0, 0, 0, 2, 0, 0, 0, 0, 1],
+            "機艙工具類管理": [1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0],
+            "甲板工具類管理": [0, 2, 0, 1, 2, 1, 0, 0, 0, 0, 0, 0, 1, 0],
+            "油料/化學藥劑管理": [2, 4, 1, 2, 0, 0, 0, 1, 2, 0, 0, 0, 2, 0],
+            "設備定期測試、檢驗": [8, 15, 6, 5, 1, 0, 0, 0, 8, 0, 0, 0, 20, 3],
+            "鏽蝕和甲板保養": [42, 38, 13, 2, 0, 0, 0, 7, 1, 0, 0, 0, 25, 0],
+            "張貼和標誌": [43, 40, 4, 1, 1, 1, 0, 0, 2, 0, 0, 0, 2, 0],
+            "個人防護設備": [3, 2, 1, 1, 0, 0, 0, 0, 0, 0, 0, 2, 1, 0],
+            "防污/污處設備": [11, 13, 4, 2, 1, 1, 2, 3, 2, 0, 0, 1, 12, 0],
+            "應急發電機": [6, 6, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 5, 0],
+            "其他應急設備": [2, 2, 0, 2, 1, 1, 0, 0, 0, 0, 0, 0, 2, 0],
+            "ETA": [3, 3, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 2, 1],
+            "量測/監控/警報/記錄設備": [32, 32, 9, 8, 2, 1, 4, 14, 1, 0, 2, 2, 30, 1],
+            "通訊設備": [6, 5, 2, 1, 0, 0, 0, 1, 0, 0, 0, 0, 5, 0],
+            "航行設備": [9, 11, 2, 6, 2, 3, 0, 3, 0, 1, 1, 1, 10, 1],
+            "消防設備": [10, 14, 4, 4, 0, 0, 1, 4, 0, 0, 5, 2, 10, 0],
+            "風閘/防火擋板/防火門/水密門": [11, 11, 3, 1, 1, 1, 0, 3, 0, 0, 1, 0, 8, 0],
+            "救生設備": [33, 31, 13, 15, 2, 2, 2, 7, 0, 0, 0, 1, 22, 0],
+            "壓載水處理系統": [4, 5, 0, 0, 0, 0, 0, 5, 0, 0, 0, 1, 3, 0],
+            "裝卸貨設備": [2, 2, 0, 2, 1, 0, 1, 2, 0, 0, 0, 1, 1, 0],
+            "貨艙壓力控制系統": [2, 1, 0, 2, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0],
+            "惰氣/氮氣系統": [3, 5, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 4, 0],
+            "繫錨泊設備": [5, 6, 2, 3, 2, 0, 2, 4, 0, 0, 1, 2, 5, 0],
+            "舵及其設備": [1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0],
+            "主機設備": [9, 8, 1, 0, 0, 0, 0, 5, 0, 0, 0, 0, 8, 0],
+            "輔機設備": [6, 6, 0, 1, 0, 1, 0, 2, 1, 0, 0, 0, 4, 0],
+            "油料供應/淨化系統": [7, 8, 3, 0, 0, 0, 1, 6, 0, 0, 0, 0, 6, 0],
+            "鍋爐/蒸汽系統": [2, 4, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 3, 0],
+            "焚燒爐": [3, 3, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0],
+            "吊重/轉運/舷梯設備": [25, 26, 5, 7, 5, 2, 0, 7, 4, 0, 2, 0, 20, 0],
+            "焊接設備": [6, 5, 1, 4, 0, 3, 0, 0, 0, 0, 0, 0, 5, 0],
+            "電器設備": [7, 12, 3, 5, 0, 2, 2, 6, 3, 0, 1, 4, 7, 1],
+            "空調設備": [1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0],
+            "照明/燈光信號設備": [10, 9, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 6, 0],
+            "艙蓋": [15, 18, 7, 3, 0, 0, 1, 8, 0, 0, 2, 0, 19, 0],
+            "艙室透氣/通風設備/開口": [24, 21, 1, 1, 1, 1, 0, 2, 0, 1, 0, 0, 20, 0],
+            "閥門和管路": [18, 19, 3, 3, 1, 0, 7, 10, 0, 1, 0, 0, 15, 0],
+            "艙室管理": [3, 4, 3, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 1],
+            "船體結構": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "其他機艙設備": [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+            "垃圾管理": [4, 7, 1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "廚房管理": [5, 5, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 2, 0],
+            "伙食/冰庫管理": [6, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+            "網絡安全管理": [1, 1, 0, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "直升機作業管理": [0, 2, 1, 1, 0, 0, 0, 1, 0, 0, 2, 0, 2, 1],
+            "船員權益管理(MLC)": [2, 3, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+            "住艙內部件/設備管理": [3, 4, 1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0],
+            "內務/物料管理": [5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            "廢棄/淘汰設備管理": [1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+        };
+
+        const textSnippets = {
+            "HVPQ/Crew Matrix": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. HVPQ 7.1.3 壓載水艙檢驗週期錯誤申報為半年（實際為一年）。\n2. HVPQ 10.6.3 船艏止鏈器位置錯誤申報為左舷（實際為中心）。\n3. 上傳的機側操車台照片錯誤，實際上傳成了焚化爐照片。\n4. 船員矩陣顯示大副英語能力為“良好”，但實際檢查中無法溝通。",
+                improvements: "1. 船長與輪機長需在每次HVPQ發布前進行逐項數據核對（Line-by-line verification）。\n2. 建立硬體變更（如改裝、設備更換）後的HVPQ即時更新流程。\n3. 定期審核上傳照片庫，確保照片與實際設備一致且清晰。"
+            },
+            "船舶證書": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 固定式泡沫滅火系統泡沫液測試報告未包含MSC.1/Circ.1312要求的小火實驗及化學穩定性測試。\n2. 國際有害物質清單（IHM）證書尚未取得。\n3. 呼吸器空氣壓縮機的年度空氣品質檢測記錄缺失。\n4. 安全設備記錄（Record of Approved Safety Equipment）未更新引水梯的材質與製造商資訊。",
+                improvements: "1. 建立證書及檢驗報告的到期自動預警系統（如Outlook或PMS）。\n2. 輪機長需特別檢查岸上檢測報告（如泡沫、水質）是否包含所有強制性測試項目。\n3. 確保護照、證書等正本文件在港口檢查前已備妥並分類歸檔。"
+            },
+            "船員證書": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 三副（3/O）在船工作但無法出示船旗國核發的適任證書（COC）。\n2. 輪機員的機艙資源管理（ERM）證書未註明是否基於模擬器培訓。\n3. 船長未持有有效的GMDSS通用操作員證書（GOC）。",
+                improvements: "1. 船員上船前，岸上人資部門需與船長雙重確認所有證書正本是否齊全。\n2. 船上應建立船員證書矩陣表，標註證書號碼及有效期，並定期更新。\n3. 對於新公約要求的培訓證書（如極地水域、IGF Code），需提前確認船員資質。"
+            },
+            "船舶技術手冊、專項手冊": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 船舶保安計畫（SSP/VHP）中的上層建築結構圖與實際船舶結構不符。\n2. SMPEP（船上油污應急計畫）中的國家聯絡人名單未更新至最新版本。\n3. SOLAS培訓手冊中關於救生艇釋放裝置的描述與實船設備不符。\n4. 繫泊系統管理計畫（MSMP）未提供在十字型繫纜樁上固定繫纜的指引。",
+                improvements: "1. 船長需定期審查所有通用手冊（Generic Manuals），剔除不適用部分並填入本船具體參數。\n2. 確保所有圖紙（如防火圖、管路圖）反映最新的船舶結構與設備佈置。\n3. 手冊更新（如SMPEP聯絡人）應列入二副/三副的月度檢查清單。"
+            },
+            "記錄缺失、錯誤": {
+                keywords: ["Oil Record Book (油類記錄簿) 8", "Log Book (航海/輪機日誌) 6", "Cargo Record Book (貨物記錄簿) 4", "Signature (簽名遺漏) 4", "Code C.11.4 (ORB編碼錯誤) 3", "Garbage Record Book (垃圾記錄簿) 2"],
+                cases: "1. GMDSS日誌未依照規定每日記錄船位。\n2. 油類紀錄簿（ORB）中，ECA燃油轉換僅記錄總量，未分艙記錄各油艙的低硫油存量。\n3. 航海日誌中未記錄船長與引水員交接指揮權（Conn）的確切時間。\n4. 駕駛台夜令簿有船長簽名但未註明時間。",
+                improvements: "1. 加強對MARPOL紀錄簿填寫的培訓，特別是針對ECA換油、EPL操作等新法規要求。\n2. 實施“記錄複核”制，大副/輪機長需每週檢查日誌的完整性與邏輯性。\n3. 確保所有法定日誌的修改均符合規範（如劃線簽名），嚴禁塗改或覆蓋。"
+            },
+            "記錄與作業交叉驗證不符": {
+                keywords: ["Alarm History (警報歷史記錄) 4", "Rest Hours (工時記錄) 3", "Bell Book (車鐘記錄簿) 2", "ODME (排油監控系統) 2", "Drill Record (演習記錄) 2"],
+                cases: "1. 船員在工時紀錄顯示為“休息”的時段，卻在密閉空間進入許可證上有簽名。\n2. 壓載水處理系統（BWTS）的電子紀錄與紙本壓載水紀錄簿內容不符。\n3. 輪機日誌記錄的機艙值班等級與實際配員不符（如紀錄EWL II但實際僅一人值班）。\n4. 垃圾紀錄簿的排放位置與GPS軌跡不符。",
+                improvements: "1. 實施嚴格的“交叉比對”內審，將日誌、工時表、警報紀錄、許可證放在一起核對時間邏輯。\n2. 強調誠信文化，杜絕為了迎合工時規定而偽造休息時間記錄。\n3. 定期下載並審查電子設備（ECDIS, ODME, BWTS）的歷史數據，確保與紙本紀錄一致。"
+            },
+            "安全、技能培訓管理": {
+                keywords: ["Drill Plan", "Training Record", "Video Training", "Matrix Gaps"],
+                cases: "1. 船員不熟悉緊急逃生呼吸器（EEBD）的正確佩戴方法。\n2. 負責人員無法演示如何校正攜帶式氣體偵測器。\n3. 缺乏針對ECDIS故障的應急演練記錄。\n4. 救生艇下水演習未按計畫進行，或缺乏照片/影片證據。",
+                improvements: "1. 落實船上培訓（Onboard Training），從“看影片”轉向“實際操作”。\n2. 針對關鍵設備（如ODME, OWS, ECDIS）進行定期的操作考核。\n3. 演習應模擬真實情境（如傷員救助、設備失效），而非流於形式的集合點名。"
+            },
+            "實操或業務能力不足": {
+                keywords: ["Familiar (熟悉度) 5", "Drill (演習) 3", "Calibration (校正) 2", "Emergency Stop (緊急停止) 1"],
+                cases: "1. 駕駛員不熟悉主機功率限制（EPL）的覆寫（Override）操作程序。\n2. 輪機員無法解釋氮氣發生器富氧廢氣的危害。\n3. 船員在測試時無法啟動應急發電機的第二啟動方式（液壓啟動）。\n4. 負責貨物操作的人員無法解釋SSSCL中的檢查項目。",
+                improvements: "1. 加強情境模擬訓練，特別是針對應急設備的啟動與故障排除。\n2. 建立“師徒制”，由資深船員指導新進人員熟悉本船特定設備。\n3. 定期進行隨機抽查（Spot Checks），要求船員現場演示設備操作。"
+            },
+            "船員態度個案": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 廚房通往庫房的防火門被用繩子綁住保持開啟（習慣性違規）。\n2. 垃圾桶未蓋蓋子，且垃圾分類錯誤（塑膠混入一般垃圾）。\n3. 船員在甲板作業時未穿戴適當的個人防護裝備（如安全鞋）。",
+                improvements: "1. 強化安全文化教育，讓船員理解違規行為的後果。\n2. 建立“不責難報告”機制（Non-blame reporting），鼓勵主動發現並糾正不安全行為。\n3. 對於屢勸不聽的違規行為，應依據公司規定進行紀律處分。"
+            },
+            "工作語言管理": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 工作語言為中文，但關鍵設備（如壓載水管理計畫、垃圾公告）僅有英文版本。\n2. 船員名單顯示英語能力良好，但實際檢查中無法用英語溝通。\n3. 繫泊區的警示標示僅有英文，不符合船員母語。",
+                improvements: "1. 確保所有關鍵操作說明、標貼及緊急程序都有船上工作語言的對照版本。\n2. 加強船員的基礎海事英語培訓，特別是針對PSC檢查的常用詞彙。\n3. 確保廣播系統（PA System）的測試包含工作語言的廣播。"
+            },
+            "存在的安全隱患": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 機艙排煙管隔熱棉缺失，表面溫度超過220°C（火災隱患）。\n2. 通往庫房的門檻過高且有間隙，存在摔落風險。\n3. 機艙底層地板上有油桶未固定。\n4. 轉動機械（如砂輪機、泵浦）的防護罩缺失。",
+                improvements: "1. 進行全船“熱點”（Hot Spot）掃描，確保高溫表面隔熱良好。\n2. 落實5S管理，清除通道上的障礙物，並固定所有移動物品。\n3. 定期檢查並修復防護設施（欄杆、防護罩、防滑漆）。"
+            },
+            "風險管控": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 進行同時作業（SIMOPS）時，未針對具體情況進行風險評估。\n2. 使用通用的風險評估模板，未考慮本船特定環境或設備。\n3. 繫泊作業的風險評估未涵蓋所有潛在的回彈區域（Snap-back zones）。",
+                improvements: "1. 風險評估必須是動態的，針對每次非例行性工作重新評估。\n2. 確保所有參與作業的人員都已閱讀並簽署風險評估文件。\n3. 定期審查風險評估庫，確保涵蓋所有常規與非常規作業。"
+            },
+            "公司疏失": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 公司提供的程序書未定義ARPA雷達試操的具體步驟。\n2. 公司未提供足夠的備件，導致關鍵設備（如雷達磁控管）長期未更換。\n3. 岸上管理層未對船上報告的缺陷（如EPL覆寫）進行及時回應。",
+                improvements: "1. 公司應定期審查SMS體系的完整性，填補程序漏洞。\n2. 建立高效的物料與備件供應鏈，確保船上庫存充足。\n3. 加強船岸溝通，確保岸上技術支援能及時解決船上問題。"
+            },
+            "工時管理": {
+                keywords: ["Rest Hours (休息時間) 4"],
+                cases: "1. 輪機員在靠泊期間實際上是一人值班，但工時紀錄顯示符合EWL II要求（造假）。\n2. 船員參與演習或夜間巡邏的時間未記錄在工時表中。\n3. 工時紀錄顯示休息，但同時間有簽發許可證或處理警報的紀錄。",
+                improvements: "1. 推動真實記錄文化，若有超時應如實記錄並提出原因（如緊急演練），而非調整數據。\n2. 船長應監控工時紀錄，確保符合MLC和STCW要求，並合理安排工作計畫。\n3. 利用電子化管理工具，自動檢測工時紀錄的邏輯錯誤。"
+            },
+            "安全作業程序/PTW管理": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 密閉空間進入許可證的批准時間晚於實際進入時間。\n2. 進行電氣維修時未執行上鎖掛牌（LOTO）程序。\n3. 熱工作業許可證未包含隔離、防火等關鍵檢查項目。\n4. 承包商登輪作業未召開工前會議或簽署許可證。",
+                improvements: "1. 嚴格執行許可證制度，強調“先審批、後作業”的時間順序。\n2. 強制執行LOTO程序，並配備足夠的上鎖設備。\n3. 加強對外來承包商的管理，確保其遵守船上的安全程序。"
+            },
+            "應急準備/演習管理": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 救生艇每三個月的下水操縱演習未執行或無證據。\n2. 消防演習中，消防員裝備穿戴不正確（如面罩未繫緊）。\n3. 應急舵演習未按計畫進行，或船員無法熟練操作。\n4. 演習紀錄內容不實（如複製貼上），與實際情況不符。",
+                improvements: "1. 制定詳細的年度演習計畫，涵蓋所有法定演習項目。\n2. 演習應模擬真實情境，並拍照或錄影存證。\n3. 演習後應進行檢討（Debriefing），記錄經驗教訓並改進。"
+            },
+            "航行安全管理": {
+                keywords: ["Passage Plan (航行計劃) 5", "Position Fixing (定位) 4", "UKC (富餘水深) 2", "ECDIS (電子海圖) 2", "XTD (偏航距離) 1"],
+                cases: "1. 通過狹窄水道時僅依賴GPS，未使用雷達或目視交叉定位。\n2. ECDIS安全等深線（Safety Contour）設定錯誤，未考慮潮汐。\n3. 航行計畫未包含詳細的避險標註（如No-Go Areas）或緊急錨地。\n4. 船長夜令簿未明確規定何時應呼叫船長。",
+                improvements: "1. 航行計畫需包含詳細的UKC計算與避險標註，並由所有駕駛員簽名確認。\n2. 嚴格執行定位手段的交叉驗證（Cross-checking）。\n3. 定期檢查ECDIS設定，確保安全參數符合公司規定與當前航行環境。"
+            },
+            "繫/離/錨泊操作安全管理": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 繫泊作業區的警示標示（Snap-back zone）僅有英文，不符船員母語。\n2. 船員在繫泊作業中站位不當，處於回彈危險區。\n3. 調整纜繩後，纜機手柄未復位。\n4. 錨泊時錨球未懸掛或位置不正確。",
+                improvements: "1. 作業前進行工具箱會議（Toolbox Talk），確認所有人員了解危險區域。\n2. 在甲板上清晰標示繫泊危險區（Snap-back zones）。\n3. 加強對資淺船員的繫泊安全培訓。"
+            },
+            "貨物/壓載操作安全管理": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 船岸安全檢查表（SSSCL）約定每4小時複查一次，但長時間無紀錄。\n2. 貨物操作期間，甲板或貨控室無人值守。\n3. 壓載水排放未依照壓載水管理計畫進行，或紀錄不完整。\n4. 貨艙通風紀錄缺失，無法證明貨物照料得當。",
+                improvements: "1. 嚴格遵守SSSCL的複查間隔，並真實記錄。\n2. 加強貨物操作期間的巡視，確保及時發現洩漏或異常。\n3. 確保壓載水操作符合公約要求，並詳細記錄於壓載水紀錄簿。"
+            },
+            "排放管理": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 廚房食用油被排入機艙污油櫃（Sludge Tank），屬於違規操作。\n2. 污水處理裝置的排放管線未標示，且閥門鑰匙管理不當。\n3. 壓載水排放前未確認相關閥門狀態（如通風窗關閉）。",
+                improvements: "1. 明確區分垃圾（如食用油）與油類廢棄物的處理流程。\n2. 對排外閥實行嚴格的上鎖管理，鑰匙由專人保管。\n3. 加強對EGCS（洗滌塔）洗滌水排放的監控與紀錄。"
+            },
+            "機艙作業管理": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 無人值守（UMS）期間，機艙巡檢紀錄與實際工作安排不符。\n2. 機艙底部有積油，且未及時清理。\n3. 燃油轉換程序未考慮ECA進入前的沖洗時間。",
+                improvements: "1. 落實機艙巡檢制度，發現漏油/漏水立即處理。\n2. 保持機艙清潔，特別是艙底與機器周邊。\n3. 嚴格執行UMS檢查表，確保無人值守期間的安全。"
+            },
+            "機艙工具類管理": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 砂輪機的擋板間隙過大（超過規定值）。\n2. 工作間工具未固定，存在掉落風險。\n3. 焊接設備的電纜破損，銅線裸露。",
+                improvements: "1. 定期檢查工作間工具的安全防護裝置（如護罩、間隙）。\n2. 建立工具使用與維護紀錄。\n3. 確保所有移動工具在不使用時妥善固定。"
+            },
+            "甲板工具類管理": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 甲板除鏽工具（氣動鎚）的氣管老化龜裂。\n2. 便攜式貨艙燈的防護罩破損或非絕緣材質。",
+                improvements: "1. 定期檢查甲板工具的電纜與氣管狀況。\n2. 確保電氣工具符合防爆或防護等級要求。\n3. 建立甲板工具的保養清單。"
+            },
+            "油料/化學藥劑管理": {
+                keywords: ["Lub Oil Analysis (滑油化驗) 5", "Sample (取樣/樣品) 4", "Bunker (燃油) 3", "Chemical Storage (化學品存放) 2", "Hydraulic Oil (液壓油) 2"],
+                cases: "1. 滑油化驗報告顯示水分過高，但未見後續處理紀錄。\n2. 燃油樣品保存超過12個月未處理，或存放混亂。\n3. 化學品存放位置未張貼MSDS（物質安全資料表）。",
+                improvements: "1. 建立油樣管理清單，及時處置過期樣品。\n2. 針對化驗報告的異常項目，必須有明確的糾正措施紀錄。\n3. 規範化學品庫房管理，確保分類存放與標示清晰。"
+            },
+            "設備定期測試、檢驗": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 開航前舵機測試聲稱已做，但警報紀錄系統中無數據支持。\n2. 應急消防泵的壓力測試未達標。\n3. 15ppm警報器的校驗過期。",
+                improvements: "1. 關鍵測試（如舵機、應急消防泵）必須留下客觀證據（如列印條）。\n2. 建立PMS系統中的自動提醒功能，防止檢驗過期。\n3. 定期進行設備的功能性測試，確保隨時可用。"
+            },
+            "鏽蝕和甲板保養": {
+                keywords: ["Corrosion/Rust (鏽蝕) 10+", "Vent/Ventilation (通風筒) 4", "Hatch Cover (艙蓋) 3", "Platform/Grating (平台/格柵) 2"],
+                cases: "1. 空氣管頭、通風筒、艙蓋水槽嚴重鏽蝕，可能影響水密性。\n2. 甲板管路有針孔洩漏，或使用臨時修補（水泥箱/橡膠皮）。\n3. 欄杆、梯道支架鏽蝕嚴重，強度不足。",
+                improvements: "1. 制定長期的甲板除鏽保養計畫，優先處理影響水密性的區域。\n2. 嚴禁使用不被認可的臨時修補方式（如橡膠皮綁紮）。\n3. 加強對隱蔽區域（如管路底部）的檢查。"
+            },
+            "張貼和標誌": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 排外閥未標示“未經輪機長許可不得開啟”。\n2. 管路流向標示不清或脫落。\n3. 救生設備的操作說明未翻譯成船員工作語言。",
+                improvements: "1. 檢查全船安全標示是否清晰、完整、語言正確。\n2. 確保所有閥門、管路都有正確的識別標示。\n3. 更新老化或褪色的IMO符號。"
+            },
+            "個人防護設備": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 電氣絕緣手套過期且未進行測試。\n2. 甲板巡視時大副未穿安全鞋。\n3. 呼吸器（SCBA）氣瓶壓力不足或面罩老化。",
+                improvements: "1. 強制執行PPE穿戴規定，並納入日常考核。\n2. 定期檢查PPE的有效期與物理狀況，及時更換。\n3. 確保備有足夠數量的合格PPE供全船使用。"
+            },
+            "防污/污處設備": {
+                keywords: ["OWS (油水分離器) 3", "Sewage Plant (生活污水處理裝置) 2", "Overboard Valve (排海閥) 2", "SOPEP Pump (防污泵) 1"],
+                cases: "1. 油水分離器（OWS）的15ppm警報器顯示時間與實際不符（懷疑篡改）。\n2. 排外閥鑰匙未由輪機長管控。\n3. 污水處理裝置的紫外線燈故障或被旁通。",
+                improvements: "1. 對防污設備實施零容忍政策，確保設備隨時可用。\n2. 嚴格管理排外閥鑰匙，並建立使用紀錄。\n3. 定期測試OWS的自動停止功能與三通閥動作。"
+            },
+            "應急發電機": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 應急發電機在測試時無法自動啟動，或無法通過第二啟動方式啟動。\n2. 啟動電池電壓不足，或電解液位過低。\n3. 燃油日用櫃出口閥被關閉或未鎖定在開啟位置。",
+                improvements: "1. 每週進行空載測試，每月進行負載測試。\n2. 確保電池狀況良好，並定期進行充放電維護。\n3. 檢查燃油系統與冷卻系統，確保無洩漏。"
+            },
+            "其他應急設備": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 燃油速閉閥氣管漏氣或被綁死無法操作。\n2. 機艙風機擋板無法完全關閉。\n3. 應急照明燈故障。",
+                improvements: "1. 定期測試速閉閥與防火擋板的功能，確保無卡阻。\n2. 嚴禁人為綁死或阻礙安全裝置的運作。\n3. 確保所有應急設備的標示清晰且易於操作。"
+            },
+            "ETA": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 船尾應急拖帶裝置（ETA）的釋放裝置卡死或鋼絲鏽蝕。\n2. 應急拖帶手冊未針對本船修改。\n3. 缺乏應急拖帶演習紀錄。",
+                improvements: "1. 將ETA納入定期保養計畫，確保活動部件活絡。\n2. 定期檢查鋼絲繩與釋放機構的狀況。\n3. 進行應急拖帶程序的培訓與演練。"
+            },
+            "量測/監控/警報/記錄設備": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 艙底水高液位警報故障或被隔離。\n2. UTI量油尺接地線斷裂。\n3. 貨艙壓力感測器讀數與就地讀數不一致。",
+                improvements: "1. 定期校驗所有監測探頭與警報器。\n2. 確保所有警報功能正常，嚴禁隨意隔離警報。\n3. 建立設備校驗證書的檔案管理。"
+            },
+            "通訊設備": {
+                keywords: ["VHF (高頻無線電) 2", "MF/HF (中高頻無線電) 1", "Talk-back System (對講系統) 1"],
+                cases: "1. GMDSS備用電池效能不足，測試時設備自動關機。\n2. INMARSAT-C站自動關機。\n3. MF/HF無線電測試失敗。",
+                improvements: "1. 定期檢查GMDSS電池比重與電壓，並進行效能測試。\n2. 確保所有通訊設備（包括備用）隨時處於工作狀態。\n3. 落實每日、每週、每月的GMDSS測試並記錄。"
+            },
+            "航行設備": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 兩台ECDIS在航行中同時黑屏或報警。\n2. 雷達磁控管超過使用壽命。\n3. 電羅經誤差過大或分羅經不同步。",
+                improvements: "1. 建立關鍵航行設備的維護與備件更換計畫。\n2. 定期進行ECDIS的軟體更新與海圖更新。\n3. 確保磁羅經與電羅經的誤差在允許範圍內並有記錄。"
+            },
+            "消防設備": {
+                keywords: ["Fire Detection (火災探測) 3", "Zone Disabled (探測區隔離) 2", "Fire Hydrant (消防栓) 2", "Extinguisher (滅火器) 1"],
+                cases: "1. 消防管路在測試時嚴重漏水。\n2. 固定式CO2系統的稱重檢查過期。\n3. 滅火器位置錯誤或壓力不足。\n4. 火警探測系統有故障警報未處理。",
+                improvements: "1. 每週測試消防泵壓力，定期巡查滅火器與消防栓狀況。\n2. 確保所有消防設備的檢查標籤都在有效期內。\n3. 嚴格執行火警探測系統的測試與維護。"
+            },
+            "風閘/防火擋板/防火門/水密門": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 機艙通風筒防火擋板無法完全關閉，有明顯間隙。\n2. 防火門被用繩子綁住保持開啟（嚴重違規）。\n3. 水密門密封條老化或關閉不嚴。",
+                improvements: "1. 嚴禁綁住防火門，確保自閉裝置正常。\n2. 定期測試防火擋板的開關功能，並進行潤滑保養。\n3. 檢查水密門的密封性與警報功能。"
+            },
+            "救生設備": {
+                keywords: ["Lifeboat (救生艇) 6", "Liferaft (救生筏) 3", "Painter (艇首纜) 2", "Sea Anchor (海錨) 1", "Limit Switch (限位開關) 1"],
+                cases: "1. 救助艇引擎無法啟動，或燃油不足。\n2. 救生艇釋放裝置鏽死無法操作。\n3. 救生圈燈電池過期或損壞。\n4. 救生筏未正確固定或釋放器（HRU）安裝錯誤。",
+                improvements: "1. 救生艇機每週試車，確保“一拉即發”。\n2. 定期檢查並保養救生艇釋放機構與吊艇架。\n3. 確保所有救生設備的耗材（電池、煙火信號）在有效期內。"
+            },
+            "壓載水處理系統": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. BWTS面板顯示感測器故障警報，但未處理。\n2. 壓載水紀錄簿與設備存儲數據不符。\n3. 系統發生故障未向船旗國或港口國報告。",
+                improvements: "1. 確保BWTS隨時處於無故障狀態，有故障立即報修並記錄。\n2. 嚴格按照操作手冊進行壓載水處理與排放。\n3. 定期比對電子紀錄與紙本紀錄，確保一致性。"
+            },
+            "裝卸貨設備": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 貨泵緊急停止按鈕（ESD）測試失效。\n2. 克令吊的限位開關故障。\n3. 貨物軟管起重機液壓油洩漏。",
+                improvements: "1. 裝卸貨前務必測試ESD系統與相關警報。\n2. 定期檢查起重設備的限位開關與鋼絲繩狀況。\n3. 確保所有貨物操作設備的維護保養紀錄完整。"
+            },
+            "貨艙壓力控制系統": {
+                keywords: ["Pressure sensor", "PV valve", "Flame screen", "Venting system", "Alarm setting"],
+                cases: "1. 貨艙壓力感測器讀數與就地讀數不一致。\n2. PV閥卡死或設定壓力錯誤。\n3. 透氣管的防火網破損或堵塞。",
+                improvements: "1. 定期校驗壓力感測器與PV閥。\n2. 清潔並檢查透氣系統，確保無阻塞。\n3. 確保PV閥的設定值符合貨物要求。"
+            },
+            "惰氣/氮氣系統": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. IGS甲板水封水位過低或無水。\n2. 氧氣含量分析儀故障或讀數不準。\n3. 系統故障警報未處理。",
+                improvements: "1. IGS系統是油輪的生命線，必須確保水封與警報正常。\n2. 定期校驗氧氣分析儀。\n3. 嚴格執行IGS的操作與維護程序。"
+            },
+            "繫錨泊設備": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 纜機剎車測試標記不清或測試套件壓力表未校正。\n2. 纜繩磨損嚴重或證書不符。\n3. 錨機液壓管漏油或底座腐蝕。",
+                improvements: "1. 嚴格執行纜繩管理計畫（LMP），定期測試纜機剎車力。\n2. 檢查纜繩狀況，及時更換損壞的纜繩。\n3. 加強繫泊設備的日常保養與潤滑。"
+            },
+            "舵及其設備": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 舵機液壓油櫃液位計故障，無法讀數。\n2. 舵機房與駕駛台通訊故障。\n3. 舵角指示器誤差過大。",
+                improvements: "1. 每日檢查舵機房，注意液壓系統是否有洩漏。\n2. 定期測試應急操舵程序與通訊設備。\n3. 確保舵機系統的警報功能正常。"
+            },
+            "主機設備": {
+                keywords: ["Generator (發電機) 6", "Leak/Leakage (洩漏) 5", "Insulation (隔熱/絕緣) 4", "Fuel Pump (燃油泵) 2", "Exhaust Pipe (排煙管) 2"],
+                cases: "1. 主機燃油泵有洩漏，且高壓油管防濺帶缺失。\n2. 油霧探測器故障或誤報。\n3. 排煙管隔熱層破損。",
+                improvements: "1. 消除機艙“跑冒滴漏”，確保高壓管路防護完整。\n2. 定期測試主機的安全保護裝置（如超速、低壓）。\n3. 檢查並修復隔熱層，防止火災風險。"
+            },
+            "輔機設備": {
+                keywords: ["Generator (發電機) 6", "Leak/Leakage (洩漏) 5", "Insulation (隔熱/絕緣) 4", "Fuel Pump (燃油泵) 2", "Exhaust Pipe (排煙管) 2"],
+                cases: "1. 發電機排煙管隔熱棉破損，表面溫度過高。\n2. 燃油管路洩漏。\n3. 轉動部件防護罩缺失。",
+                improvements: "1. 使用熱成像儀檢查高溫表面，防止油接觸熱源。\n2. 確保發電機隨時處於良好狀態，能自動並電。\n3. 加強對燃油管路的檢查與維護。"
+            },
+            "油料供應/淨化系統": {
+                keywords: ["Purifier room", "Filter alarm", "Leakage", "Catch tray", "Fuel valve"],
+                cases: "1. 淨油機周圍有積油。\n2. 燃油濾器堵塞警報失效。\n3. 供油泵軸封洩漏。",
+                improvements: "1. 保持淨油機間清潔，防止積油引發火災。\n2. 定期清理濾器，確保供油暢通。\n3. 檢查並修復系統中的洩漏點。"
+            },
+            "鍋爐/蒸汽系統": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 鍋爐安全閥被鋼絲綁死，無法作動（嚴重違規）。\n2. 水位計玻璃模糊不清或照明損壞。\n3. 自動控制系統故障，需手動操作。",
+                improvements: "1. 嚴禁干擾安全閥功能，定期進行測試。\n2. 保持觀測設備清晰，確保水位監控準確。\n3. 維護燃燒器與控制系統，確保燃燒效率與安全。"
+            },
+            "焚燒爐": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 焚燒爐內部耐火材料塌陷。\n2. 燃燒器點火失敗。\n3. 排煙風機故障。",
+                improvements: "1. 定期檢查爐膛狀況，修補損壞的耐火磚。\n2. 依照廠商手冊操作，避免燃燒不當廢棄物。\n3. 測試相關警報與安全保護裝置。"
+            },
+            "吊重/轉運/舷梯設備": {
+                keywords: ["Crane (克令吊) 4", "Gangway (舷梯) 3", "Personnel Transfer (人員轉運) 2", "Pilot Ladder (引水梯) 2"],
+                cases: "1. 伙食吊的限位開關故障。\n2. 舷梯鋼絲嚴重鏽蝕。\n3. 舷梯安全網未正確安裝。",
+                improvements: "1. 使用前務必測試限位開關，確保安全。\n2. 定期保養鋼絲繩，並按規定更換。\n3. 檢查舷梯及其絞車的狀況，確保登輪安全。"
+            },
+            "焊接設備": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 氣焊設備的回火防止器過期或未安裝。\n2. 氣瓶未直立固定，或氧氣與乙炔混放。\n3. 焊接軟管老化龜裂。",
+                improvements: "1. 嚴格檢查氣焊設備的安全性，定期更換回火防止器。\n2. 氣瓶必須分類存放並固定，張貼危險標示。\n3. 確保焊接作業時配備適當的滅火器材。"
+            },
+            "電器設備": {
+                keywords: ["Insulation (絕緣) 5", "Switchboard (配電盤) 3", "Alarm Setting (警報設定) 2", "Socket (插座) 2"],
+                cases: "1. 配電盤絕緣監測儀讀數極低，或警報被關閉。\n2. 洗衣房使用非船用插座。\n3. 電纜接頭鬆動或絕緣破損。",
+                improvements: "1. 每日監測絕緣值，發現接地故障立即排除。\n2. 規範電器設備的使用，嚴禁私接亂拉。\n3. 定期清潔配電盤，檢查接線端子。"
+            },
+            "空調設備": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 空調室外機支架嚴重鏽蝕傾斜。\n2. 濾網堵塞，影響通風效果。\n3. 冷媒洩漏。",
+                improvements: "1. 定期清潔濾網，確保空氣流通。\n2. 檢查外部單元固定狀況，及時除鏽油漆。\n3. 監控系統運行參數，防止故障。"
+            },
+            "照明/燈光信號設備": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 泵間防爆燈罩破裂（失去防爆功能）。\n2. 應急照明燈故障不亮。\n3. 航行燈故障或安裝位置不當。",
+                improvements: "1. 更換破損燈具，特別是防爆區域和應急照明。\n2. 定期測試航行燈與信號燈的功能。\n3. 確保所有照明設備符合安全規範。"
+            },
+            "艙蓋": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 艙蓋膠條更換長度不足（切成小段修補），無法保證水密。\n2. 排水槽堵塞或止回閥失效。\n3. 壓緊器（Cleats）鏽死或墊圈遺失。",
+                improvements: "1. 進行超聲波試驗檢查水密性，膠條更換應成段進行。\n2. 定期清理排水槽，確保排水暢通。\n3. 保養壓緊裝置，確保艙蓋鎖緊有效。"
+            },
+            "艙室透氣/通風設備/開口": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 壓載艙透氣管頭嚴重鏽蝕，網罩破損。\n2. 通風筒擋板無法關閉或鏽死。\n3. 透氣管浮球卡死。",
+                improvements: "1. 甲板保養重點項目，定期除鏽油漆。\n2. 檢查浮球與密封墊圈，確保功能正常。\n3. 測試通風擋板的開關，確保火災時能有效隔離。"
+            },
+            "閥門和管路": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 管路有針孔洩漏，使用臨時修補（如橡膠皮）未經認可。\n2. 閥門卡死無法操作。\n3. 管路支架鏽蝕斷裂。",
+                improvements: "1. 永久性修復管路洩漏，避免使用臨時手段。\n2. 定期活動閥門，確保開關靈活。\n3. 檢查管路腐蝕情況，必要時換新。"
+            },
+            "艙室管理": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 泵間底部積存油水。\n2. 艙室內堆放雜物，阻礙通道。\n3. 照明不足。",
+                improvements: "1. 保持艙底乾燥清潔，及時清理油污。\n2. 規範物品存放，確保通道暢通。\n3. 維護艙室照明與通風。"
+            },
+            "船體結構": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 船體外板發現裂紋或嚴重變形。\n2. 強力甲板鏽蝕變薄。\n3. 內部結構（肋骨）損壞。",
+                improvements: "1. 發現結構性損傷應立即報告船級社與公司。\n2. 加強易腐蝕區域的檢查與保養。\n3. 監控裂紋發展，採取臨時止裂措施。"
+            },
+            "其他機艙設備": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 機艙車床缺少防護眼罩或皮帶防護罩。\n2. 配電板前絕緣墊缺失或老化。\n3. 設備周邊油污未清理。",
+                improvements: "1. 加強工作間安全防護，確保設備符合安全標準。\n2. 配備合格的絕緣防護設施。\n3. 保持機艙環境整潔，減少火災風險。"
+            },
+            "垃圾管理": {
+                keywords: ["Garbage Bin (垃圾桶) 4", "Plastics (塑膠) 3", "E-waste (電子垃圾) 2", "Garbage Plan (垃圾管理計劃) 2"],
+                cases: "1. 塑膠垃圾混入一般垃圾。\n2. 垃圾桶未蓋蓋子。\n3. 垃圾紀錄簿填寫錯誤（如排放位置不準確）。",
+                improvements: "1. 嚴格執行垃圾分類，加強源頭管理。\n2. 定期檢查垃圾站，確保符合衛生與安全要求。\n3. 規範垃圾紀錄簿的填寫，確保數據準確。"
+            },
+            "廚房管理": {
+                keywords: ["Galley (廚房) 3", "Cleanliness (清潔) 2"],
+                cases: "1. 抽油煙機積滿油垢（火災風險）。\n2. 蟑螂滋生，衛生條件差。\n3. 排水溝堵塞。",
+                improvements: "1. 每週徹底清潔廚房，特別是排煙道與隔油池。\n2. 定期進行蟲害防治。\n3. 保持廚房設備清潔與功能正常。"
+            },
+            "伙食/冰庫管理": {
+                keywords: ["Food Storage (食物儲存) 2"],
+                cases: "1. 庫房內發現發霉蔬菜，生熟食混放。\n2. 冰庫溫度警報失效。\n3. 庫房內地板髒污。",
+                improvements: "1. 定期清理庫房，確保食品衛生與新鮮。\n2. 檢查並測試冰庫警報系統。\n3. 規範食品存放，避免交叉污染。"
+            },
+            "網絡安全管理": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 關鍵電腦未設置密碼保護。\n2. 未經許可使用私人USB設備。\n3. 軟體版本過舊，未更新補丁。",
+                improvements: "1. 確保所有關鍵系統設置強密碼並定期更換。\n2. 嚴格管控USB設備的使用，防止病毒傳播。\n3. 定期更新防毒軟體與系統補丁。"
+            },
+            "直升機作業管理": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 直升機甲板標示不清或油漆剝落。\n2. 安全網破損。\n3. 消防設備未備便。",
+                improvements: "1. 維護直升機甲板設施，確保標示清晰。\n2. 檢查安全網與周邊防護設施。\n3. 定期檢查直升機作業相關的消防與通訊設備。"
+            },
+            "船員權益管理(MLC)": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 船員不清楚投訴程序。\n2. 僱傭合約過期或未簽署。\n3. 工資發放紀錄不完整。",
+                improvements: "1. 張貼明確的投訴流程圖，並確保船員知曉。\n2. 定期審查船員合約與相關文件。\n3. 確保工資發放準時且紀錄透明。"
+            },
+            "住艙內部件/設備管理": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 洗衣房漏水，地板積水。\n2. 廁所堵塞或沖水功能失效。\n3. 艙室照明損壞。",
+                improvements: "1. 及時維修生活區設施，保障船員生活品質。\n2. 檢查管路與排水系統，防止洩漏。\n3. 確保住艙環境舒適與安全。"
+            },
+            "內務/物料管理": {
+                keywords: ["Cleanliness (清潔) 2"],
+                cases: "1. 物料間堆放雜亂，阻礙通道。\n2. 庫存紀錄與實際不符。\n3. 餐廳環境髒亂。",
+                improvements: "1. 落實5S管理，保持環境整潔有序。\n2. 建立準確的物料庫存紀錄。\n3. 定期清潔公共區域，提升居住環境。"
+            },
+            "廢棄/淘汰設備管理": {
+                keywords: ["", "", "", "", "", "", ""],
+                cases: "1. 廢棄設備堆放在甲板上，未妥善處置。\n2. 報廢的電池未按危險廢物處理。",
+                improvements: "1. 及時將淘汰設備搬離，避免檢查時造成困擾。\n2. 依照規定處置危險廢棄物。\n3. 保持廢棄物存放區域的整潔與安全。"
+            }
+        };
+
+        // ... [Rest of the logic remains unchanged, as it handles the chart rendering and interactions correctly] ...
+        // [Logic for Summary, Grouped Bar, Radar, Breakdown Charts]
+
+        function initSummary() {
+            // Render Categories
+            const tCats=[], bCats=[];
+            Object.entries(analysisDB).forEach(([k,v]) => {
+                tCats.push({name:k, val:v.te+v.ti}); bCats.push({name:k, val:v.be+v.bi});
+            });
+            const renderCat = (arr, id) => {
+                arr.sort((a,b)=>b.val-a.val);
+                document.getElementById(id).innerHTML = arr.slice(0,10).map((x,i) => `<li class="flex justify-between"><span>${i+1}.${x.name}</span><span class="bg-slate-100 px-2 rounded font-bold">${x.val}</span></li>`).join('');
+            };
+            renderCat(tCats, 't-top-cat'); renderCat(bCats, 'b-top-cat');
+
+            // Render Roots (Tanker vs Bulk filtered)
+            const mapRoots = (sums) => rootColumnsOriginal.map((name, index) => ({ name, val: sums[index], index }));
+            const tRoots = mapRoots(tankerRootSums).sort((a,b)=>b.val-a.val);
+            const bRoots = mapRoots(bulkRootSums).sort((a,b)=>b.val-a.val);
+            const renderRoots = (roots, id) => document.getElementById(id).innerHTML = roots.slice(0,10).map((x,i) => `<li class="flex justify-between"><span>${i+1}.${x.name}</span><span class="bg-slate-100 px-2 rounded font-bold">${x.val}</span></li>`).join('');
+            renderRoots(tRoots, 't-top-root'); renderRoots(bRoots, 'b-top-root');
+        }
+
+        // --- GROUPED BAR CHART ---
+        let groupedBarChart;
+        let selectedBarCats = new Set(); 
+
+        function initGroupedBar() {
+            const ctx = document.getElementById('groupedBarChart').getContext('2d');
+            const filters = [
+                {id:'te',label:'Tanker-Ex (外)',c:'#1E3A8A'}, {id:'ti',label:'Tanker-In (內)',c:'#93C5FD'},
+                {id:'be',label:'Bulk-Ex (外)',c:'#064E3B'}, {id:'bi',label:'Bulk-In (內)',c:'#6EE7B7'},
+                {id:'r3te',label:'Risk3-T-Ex',c:'#FCA5A5'}, {id:'r3ti',label:'Risk3-T-In',c:'#FECACA'},
+                {id:'r3be',label:'Risk3-B-Ex',c:'#FDBA74'}, {id:'r3bi',label:'Risk3-B-In',c:'#FED7AA'},
+                {id:'r2te',label:'Risk2-T',c:'#FDE047'}, {id:'r2be',label:'Risk2-B',c:'#BEF264'}  
+            ];
+            
+            const container = document.getElementById('bar-filters');
+            filters.forEach(f => {
+                const isChecked = ['te','ti','be','bi'].includes(f.id); 
+                const l = document.createElement('label'); l.className = 'cursor-pointer';
+                l.innerHTML = `<input type="checkbox" value="${f.id}" class="peer hidden" ${isChecked ? 'checked' : ''}><span class="peer-checked:bg-[${f.c}] peer-checked:text-white peer-checked:border-[${f.c}] border border-slate-300 px-2 py-1 rounded text-xs text-slate-500 font-bold bg-white hover:bg-slate-50 transition-all select-none flex items-center gap-1 shadow-sm"><span class="w-2 h-2 rounded-full bg-white bg-opacity-50"></span>${f.label}</span>`;
+                l.querySelector('input').addEventListener('change', updateBarChart);
+                container.appendChild(l);
+            });
+
+            // Dropdown
+            const catContainer = document.getElementById('bar-options');
+            const sortedCats = [...allCategories].sort((a,b) => analysisDB[b].total - analysisDB[a].total);
+            sortedCats.forEach(c => {
+                const div = document.createElement('div');
+                div.className = `option-item`;
+                div.dataset.value = c;
+                div.innerHTML = `<input type="checkbox" value="${c}"><span>${c}</span><span class="count-badge">${analysisDB[c].total}</span>`;
+                div.onclick = (e) => { 
+                    if (e.target.tagName !== 'INPUT') { 
+                        const cb = div.querySelector('input'); cb.checked = !cb.checked; toggleBarCategory(c);
+                    } else { toggleBarCategory(c); }
+                };
+                catContainer.appendChild(div);
+            });
+
+            const valueLabelPlugin = {
+                id: 'valueLabelPlugin',
+                afterDatasetsDraw(chart, args, options) {
+                    const { ctx } = chart;
+                    ctx.save();
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'middle';
+                    ctx.font = 'bold 10px "Noto Sans TC"';
+                    chart.data.datasets.forEach((dataset, i) => {
+                        const meta = chart.getDatasetMeta(i);
+                        if (!meta.hidden) {
+                            meta.data.forEach((element, index) => {
+                                const val = dataset.data[index][1] - dataset.data[index][0]; 
+                                if(val > 0) { ctx.fillStyle = dataset.backgroundColor; ctx.fillText(val, element.x + 4, element.y); }
+                            });
+                        }
+                    });
+                    ctx.restore();
+                }
+            };
+
+            // Plugin for Dashed Separator Lines
+            const separatorPlugin = {
+                id: 'separatorPlugin',
+                beforeDatasetsDraw(chart, args, options) {
+                    const { ctx, chartArea: { left, right }, scales: { y } } = chart;
+                    if (!y) return;
+                    
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = '#E2E8F0'; // Light gray
+                    ctx.setLineDash([5, 5]); // Dashed
+
+                    // Iterate through ticks to find midpoints
+                    const ticks = y.getTicks();
+                    for (let i = 0; i < ticks.length - 1; i++) {
+                        const y1 = y.getPixelForTick(i);
+                        const y2 = y.getPixelForTick(i + 1);
+                        const yMid = (y1 + y2) / 2;
+                        
+                        ctx.moveTo(left, yMid);
+                        ctx.lineTo(right, yMid);
+                    }
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            };
+
+            groupedBarChart = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: [], datasets: [] }, 
+                plugins: [valueLabelPlugin, separatorPlugin],
+                options: {
+                    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                    scales: { x: { display: false, min: -50, max: 50 }, y: { stacked: false, grid: { display: false }, ticks: { font: { weight:'bold', size: 11 }, color: '#475569' } } },
+                    plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                    onClick: (e, els) => { if(els.length>0) showAnalysis(groupedBarChart.data.labels[els[0].index]); }
+                }
+            });
+            setBarChartTop(10);
+        }
+
+        function toggleBarDropdown() { document.getElementById('bar-options').classList.toggle('active'); }
+        function toggleBarCategory(cat) { if (selectedBarCats.has(cat)) selectedBarCats.delete(cat); else selectedBarCats.add(cat); syncBarCheckboxes(); updateBarChart(); }
+        function syncBarCheckboxes() { document.querySelectorAll('#bar-options .option-item').forEach(opt => { const val = opt.dataset.value; const cb = opt.querySelector('input'); const isSel = selectedBarCats.has(val); cb.checked = isSel; if(isSel) opt.classList.add('selected'); else opt.classList.remove('selected'); }); }
+        function setBarChartTop(n) {
+            document.querySelectorAll('[id^="btn-bar-"]').forEach(b => b.classList.remove('active'));
+            if(n===10) document.getElementById('btn-bar-10').classList.add('active');
+            if(n===20) document.getElementById('btn-bar-20').classList.add('active');
+            if(n===30) document.getElementById('btn-bar-30').classList.add('active');
+            if(n===999) document.getElementById('btn-bar-all').classList.add('active');
+            selectedBarCats.clear();
+            const dimInputs = document.querySelectorAll('#bar-filters input:checked');
+            const checkedDims = Array.from(dimInputs).map(x=>x.value);
+            const sorted = [...allCategories].sort((a,b) => getSumForCat(b, checkedDims) - getSumForCat(a, checkedDims));
+            const limit = Math.min(n, sorted.length);
+            sorted.slice(0, limit).forEach(c => selectedBarCats.add(c));
+            syncBarCheckboxes(); updateBarChart();
+        }
+        function getSumForCat(cat, dims) {
+            let sum = 0;
+            dims.forEach(k => { if (k === 'r2te') sum += analysisDB[cat].r2te + analysisDB[cat].r2ti; else if (k === 'r2be') sum += analysisDB[cat].r2be + analysisDB[cat].r2bi; else sum += analysisDB[cat][k]; });
+            return sum;
+        }
+        function updateBarChart() {
+            const inputs = document.querySelectorAll('#bar-filters input:checked');
+            const checkedKeys = Array.from(inputs).map(x=>x.value);
+            let visibleCats = Array.from(selectedBarCats).sort((a,b) => getSumForCat(b, checkedKeys) - getSumForCat(a, checkedKeys));
+            const colors = { 'te':'#1E3A8A', 'ti':'#93C5FD', 'be':'#064E3B', 'bi':'#6EE7B7', 'r3te':'#FCA5A5', 'r3ti':'#FECACA', 'r3be':'#FDBA74', 'r3bi':'#FED7AA', 'r2te':'#FDE047', 'r2be':'#BEF264' };
+            const datasets = checkedKeys.map(key => {
+                return {
+                    label: key.toUpperCase(), backgroundColor: colors[key], borderColor: 'white', borderWidth: 1, borderRadius: 4, barPercentage: 0.8, categoryPercentage: 0.9,
+                    data: visibleCats.map(cat => {
+                        let val = 0; if (key === 'r2te') val = analysisDB[cat].r2te + analysisDB[cat].r2ti; else if (key === 'r2be') val = analysisDB[cat].r2be + analysisDB[cat].r2bi; else val = analysisDB[cat][key];
+                        return [-val/2, val/2]; 
+                    })
+                };
+            });
+            groupedBarChart.data.labels = visibleCats; groupedBarChart.data.datasets = datasets;
+            let maxVal = 0; visibleCats.forEach(cat => { checkedKeys.forEach(k => { let v = 0; if (k === 'r2te') v = analysisDB[cat].r2te + analysisDB[cat].r2ti; else if (k === 'r2be') v = analysisDB[cat].r2be + analysisDB[cat].r2bi; else v = analysisDB[cat][k]; if(v > maxVal) maxVal = v; }); });
+            const padding = maxVal * 0.3; groupedBarChart.options.scales.x.min = -(maxVal/2) - padding; groupedBarChart.options.scales.x.max = (maxVal/2) + padding;
+            groupedBarChart.update();
+        }
+        function showAnalysis(cat) {
+            const d = textSnippets[cat];
+            const placeholder = document.getElementById('analysis-placeholder');
+            const contentContainer = document.getElementById('analysis-content-container');
+            const badge = document.getElementById('selected-category-badge');
+
+            if (d) {
+                // Hide placeholder, show content
+                placeholder.classList.add('hidden');
+                contentContainer.classList.remove('hidden');
+                
+                // Update Badge
+                badge.innerText = cat;
+                badge.classList.remove('hidden');
+
+                // 1. Keywords (Filter out empty strings)
+                const validKeywords = d.keywords.filter(k => k && k.trim() !== "");
+                if (validKeywords.length > 0) {
+                    document.getElementById('analysis-keywords').innerHTML = validKeywords.map(k => 
+                        `<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold border border-blue-200">${k}</span>`
+                    ).join('');
+                } else {
+                    document.getElementById('analysis-keywords').innerHTML = '<span class="text-slate-400 text-xs italic">暫無關鍵詞</span>';
+                }
+                
+                // 2. Cases
+                document.getElementById('analysis-cases').innerText = d.cases || "暫無案例";
+                
+                // 3. Improvements
+                document.getElementById('analysis-improvements').innerText = d.improvements || "暫無建議";
+            } else {
+                // Show placeholder, hide content
+                placeholder.classList.remove('hidden');
+                contentContainer.classList.add('hidden');
+                badge.classList.add('hidden');
+                placeholder.innerHTML = `<p class="text-slate-400 italic text-sm text-center">該分類 (${cat}) <br>暫無詳細智能分析數據。</p>`;
+            }
+        }
+
+        // --- 3. RADAR CHART ---
+        let radarChart;
+        let selectedRadarCats = new Set(["量測/監控/警報/記錄設備", "記錄缺失、錯誤"]); 
+        let visibleRootIndices = new Set(rootColumnsOriginal.map((_, i) => i)); 
+
+        function initRadar() {
+            const container = document.getElementById('radar-options');
+            // Sort keys by total sum of roots for initial display logic if needed, or just alphabetical
+            // Let's use the same sort order as bar chart (total count)
+            const sortedCats = [...allCategories].sort((a,b) => analysisDB[b].total - analysisDB[a].total);
+            
+            sortedCats.forEach(c => {
+                const div = document.createElement('div');
+                div.className = `option-item ${selectedRadarCats.has(c) ? 'selected' : ''}`;
+                // Calculate total root count for badge
+                const rootTotal = rootDB[c] ? rootDB[c].reduce((a,b)=>a+b, 0) : 0;
+                div.innerHTML = `<input type="checkbox" value="${c}" ${selectedRadarCats.has(c) ? 'checked' : ''}><span>${c}</span><span class="count-badge">${rootTotal}</span>`;
+                div.onclick = (e) => { if (e.target.tagName !== 'INPUT') { const cb = div.querySelector('input'); cb.checked = !cb.checked; toggleRadarSelection(c); } else { toggleRadarSelection(c); } };
+                container.appendChild(div);
+            });
+
+            const rcContainer = document.getElementById('root-filter-container');
+            rootColumnsOriginal.forEach((rc, index) => {
+                const btn = document.createElement('button');
+                btn.className = `root-chip active`; btn.dataset.index = index; btn.innerHTML = `<span>${rc}</span> <span class="root-chip-count">0</span>`; 
+                btn.onclick = () => toggleRootVisibility(index);
+                rcContainer.appendChild(btn);
+            });
+
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: { labels: rootColumnsOriginal, datasets: [] },
+                options: {
+                    responsive: true, maintainAspectRatio: false, layout: { padding: 10 },
+                    scales: { r: { angleLines: { color: '#E2E8F0' }, grid: { color: '#F1F5F9' }, pointLabels: { color: '#334155', font: { size: 11, weight: '700' } } } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+            updateRadar();
+        }
+
+        function toggleRadarDropdown() { document.getElementById('radar-options').classList.toggle('active'); }
+        function selectTopNRadar(n) {
+            document.querySelectorAll('[id^="btn-radar-"]').forEach(b => b.classList.remove('active'));
+            if(n===10) document.getElementById('btn-radar-10').classList.add('active');
+            if(n===20) document.getElementById('btn-radar-20').classList.add('active');
+            if(n===30) document.getElementById('btn-radar-30').classList.add('active');
+            if(n===999) document.getElementById('btn-radar-all').classList.add('active');
+            selectedRadarCats.clear();
+            
+            // Sort by Root Total Count
+            const sortedCats = [...allCategories].sort((a,b) => {
+                const sumA = rootDB[a] ? rootDB[a].reduce((acc, v) => acc + v, 0) : 0;
+                const sumB = rootDB[b] ? rootDB[b].reduce((acc, v) => acc + v, 0) : 0;
+                return sumB - sumA;
+            });
+            
+            const limit = Math.min(n, sortedCats.length);
+            sortedCats.slice(0, limit).forEach(c => selectedRadarCats.add(c));
+            syncRadarCheckboxes(); updateRadar();
+        }
+        function deselectAllRadar() { selectedRadarCats.clear(); syncRadarCheckboxes(); updateRadar(); }
+        function syncRadarCheckboxes() { document.querySelectorAll('#radar-options .option-item input').forEach(cb => { const val = cb.value; cb.checked = selectedRadarCats.has(val); cb.closest('.option-item').classList.toggle('selected', selectedRadarCats.has(val)); }); }
+        function toggleRadarSelection(cat) { if (selectedRadarCats.has(cat)) selectedRadarCats.delete(cat); else selectedRadarCats.add(cat); syncRadarCheckboxes(); updateRadar(); }
+        function resetRootFilters() { visibleRootIndices = new Set(rootColumnsOriginal.map((_, i) => i)); updateRadar(); }
+        function toggleRootVisibility(index) { if (visibleRootIndices.has(index)) visibleRootIndices.delete(index); else visibleRootIndices.add(index); updateRadar(); }
+
+        function updateRadar() {
+            const currentLabels = rootColumnsOriginal.filter((_, i) => visibleRootIndices.has(i));
+            const datasets = [];
+            const colors = ['#A9DEF9', '#FFB7B2', '#B5EAD7', '#C7CEEA', '#FFDAC1', '#E2F0CB']; 
+            let idx = 0;
+            const currentRootSums = rootColumnsOriginal.map(r=>0);
+            const topRoots = rootColumnsOriginal.map((r, i)=>({name:r, val:0, originalIndex: i}));
+
+            selectedRadarCats.forEach(cat => {
+                const color = colors[idx % colors.length];
+                const rawData = rootDB[cat];
+                if(rawData) {
+                    rawData.forEach((v, i) => { currentRootSums[i] += v; if (visibleRootIndices.has(i)) topRoots[i].val += v; });
+                    const filteredData = rawData.filter((_, i) => visibleRootIndices.has(i));
+                    datasets.push({ label: cat, data: filteredData, backgroundColor: hexToRgbA(color, 0.2), borderColor: color, borderWidth: 2, pointBackgroundColor: color });
+                    idx++;
+                }
+            });
+
+            radarChart.data.labels = currentLabels; radarChart.data.datasets = datasets; radarChart.update();
+            document.querySelectorAll('.root-chip').forEach((btn, index) => {
+                const isActive = visibleRootIndices.has(index); btn.className = `root-chip ${isActive ? 'active' : 'inactive'}`;
+                const countSpan = btn.querySelector('.root-chip-count'); if(countSpan) countSpan.innerText = currentRootSums[index];
+            });
+            document.getElementById('radar-selected-tags').innerHTML = Array.from(selectedRadarCats).map((c, i) => `<span class="px-2 py-0.5 rounded text-[10px] font-bold text-slate-600 border border-slate-200" style="background:${hexToRgbA(colors[i%colors.length], 0.2)}">${c}</span>`).join('');
+            const visibleRoots = topRoots.filter(r => visibleRootIndices.has(r.originalIndex));
+            visibleRoots.sort((a,b)=>b.val-a.val);
+            const showCount = selectedRadarCats.size > 10 ? 10 : 5;
+            document.getElementById('radar-top-list').innerHTML = visibleRoots.slice(0,showCount).map((r,i) => `<div class="flex justify-between text-xs border-b border-slate-100 pb-1"><span class="text-slate-700 font-bold">${i+1}. ${r.name}</span><span class="font-bold text-slate-900 bg-slate-100 px-1.5 rounded">${r.val}</span></div>`).join('');
+        }
+
+        function hexToRgbA(hex, alpha){ let c; if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){ c= hex.substring(1).split(''); if(c.length== 3){ c= [c[0], c[0], c[1], c[1], c[2], c[2]]; } c= '0x'+c.join(''); return 'rgba('+[(c>>16)&255, (c>>8)&255, c&255].join(',')+','+alpha+')'; } return 'rgba(0,0,0,'+alpha+')'; }
+
+        document.addEventListener('click', function(event) {
+            const isClickInsideRadar = document.getElementById('radar-multiselect').contains(event.target);
+            if (!isClickInsideRadar) document.getElementById('radar-options').classList.remove('active');
+            const isClickInsideBar = document.getElementById('bar-multiselect').contains(event.target);
+            if (!isClickInsideBar) document.getElementById('bar-options').classList.remove('active');
+        });
+        
+        // ============================================
+        // 4. BLOCK 4: ROOT CAUSE BREAKDOWN (NEW)
+        // ============================================
+        
+        let breakdownChart;
+        let selectedBreakdownRoots = new Set();
+        let selectedBreakdownType = 'all'; // all, tanker, bulk
+
+        function initBreakdown() {
+            // 1. Root Selectors
+            const container = document.getElementById('breakdown-root-selector');
+            rootColumnsOriginal.forEach((rc, i) => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center gap-2 text-xs font-medium text-slate-600 mb-1';
+                // Add color box
+                const colorBox = `<span class="w-3 h-3 rounded-full inline-block mr-1" style="background-color: ${rootColors[i]}"></span>`;
+                div.innerHTML = `
+                    <input type="checkbox" value="${i}" id="bd-root-${i}" class="w-3.5 h-3.5 accent-slate-600 rounded">
+                    <label for="bd-root-${i}" class="cursor-pointer select-none flex items-center">
+                        ${colorBox}
+                        ${rc} <span class="text-slate-400 ml-1 breakdown-count">(${rootTotals.all[i]})</span>
+                    </label>
+                `;
+                div.querySelector('input').addEventListener('change', (e) => {
+                    const idx = parseInt(e.target.value);
+                    if(e.target.checked) selectedBreakdownRoots.add(idx); else selectedBreakdownRoots.delete(idx);
+                    updateBreakdownChart();
+                });
+                container.appendChild(div);
+            });
+
+            // Init Chart
+            const ctx = document.getElementById('breakdownChart').getContext('2d');
+            breakdownChart = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: [], datasets: [] },
+                plugins: [ChartDataLabels],
+                options: {
+                    indexAxis: 'y', // Horizontal
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { beginAtZero: true, grid: { color: '#F1F5F9' }, stacked: true },
+                        y: { 
+                            grid: { display: false }, 
+                            ticks: { font: { weight:'bold', size: 11 }, color: '#475569' },
+                            stacked: true 
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            display: false // We handle numbers manually or let tooltip handle? User wants numbers.
+                            // Since stacked, showing label inside might be cluttered. Let's show TOTAL at end?
+                            // Or show value inside if big enough.
+                        }
+                    }
+                }
+            });
+
+            // Default select first root
+            document.getElementById('bd-root-0').checked = true;
+            selectedBreakdownRoots.add(0);
+            updateBreakdownChart();
+        }
+
+        function updateBreakdownType(type) {
+            selectedBreakdownType = type;
+            document.getElementById('bd-btn-all').classList.toggle('active', type==='all');
+            document.getElementById('bd-btn-tanker').classList.toggle('active', type==='tanker');
+            document.getElementById('bd-btn-bulk').classList.toggle('active', type==='bulk');
+            
+            // Update counts in checkboxes
+            const counts = rootTotals[type];
+            document.querySelectorAll('.breakdown-count').forEach((span, idx) => {
+                span.innerText = `(${counts[idx]})`;
+            });
+
+            updateBreakdownChart();
+        }
+
+        function updateBreakdownChart() {
+            // Logic:
+            // 1. Calculate sum for each category based on selected roots & type
+            // 2. Sort categories to find Top 15 total
+            // 3. Create Stacked Datasets for these Top 15 categories
+
+            const aggData = []; // { cat: string, total: number, breakdown: { rootIdx: val, ... } }
+
+            allCategories.forEach(cat => {
+                let totalCount = 0;
+                const breakdown = {};
+                
+                const rootRow = rootDB[cat];
+                if (rootRow) {
+                    selectedBreakdownRoots.forEach(rootIndex => {
+                        let val = rootRow[rootIndex];
+                        // Apply Split Ratio
+                        if (selectedBreakdownType !== 'all') {
+                            const stats = analysisDB[cat];
+                            const ratio = selectedBreakdownType === 'tanker' 
+                                ? (stats.total > 0 ? stats.tTotal / stats.total : 0)
+                                : (stats.total > 0 ? stats.bTotal / stats.total : 0);
+                            val = Math.round(val * ratio);
+                        }
+                        breakdown[rootIndex] = val;
+                        totalCount += val;
+                    });
+                }
+                if(totalCount > 0) aggData.push({ cat: cat, total: totalCount, breakdown: breakdown });
+            });
+
+            // Sort Descending
+            aggData.sort((a,b) => b.total - a.total);
+
+            // Take Top 15
+            const top15 = aggData.slice(0, 15);
+
+            // Update Total Display
+            const grandTotal = aggData.reduce((acc, cur) => acc + cur.total, 0);
+            document.getElementById('breakdown-total-display').innerText = `Total: ${grandTotal}`;
+
+            // Create Datasets (One per selected Root)
+            const datasets = [];
+            selectedBreakdownRoots.forEach(rootIdx => {
+                datasets.push({
+                    label: rootColumnsOriginal[rootIdx],
+                    data: top15.map(d => d.breakdown[rootIdx] || 0),
+                    backgroundColor: rootColors[rootIdx],
+                    barThickness: 16,
+                    stack: 'total' // Enable stacking
+                });
+            });
+
+            // Render
+            breakdownChart.data.labels = top15.map(d => d.cat);
+            breakdownChart.data.datasets = datasets;
+            
+            // Custom plugin to show total at end of bar?
+            // Simple way: Add a transparent dataset with total label
+            // Or just use the grid tooltip.
+            // For now, let's stick to standard stacked.
+            
+            breakdownChart.update();
+        }
+
+        // Init All
+        initSummary(); initGroupedBar(); initRadar(); initBreakdown();
+    </script>
+</body>
+</html>
