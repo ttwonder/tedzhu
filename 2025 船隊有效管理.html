@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fleet Management - Global Left Offset</title>
+    <style>
+        :root {
+            /* === 全域基準線 === */
+            --pos-1: 20%; --pos-2: 38%; --pos-3: 56%; --pos-4: 74%;
+            
+            /* === 水平佈局：整體左移調整 === */
+            --col-gap: 290px; 
+            --global-x-offset: 80px; /* 玻璃群組左移 (130px -> 80px) */
+            --glass-width: 270px; 
+            --text-overlap: 3px;
+
+            --bg-top: #FFDEE9; --bg-bottom: #B5FFFC;
+            --text-main: #1a202c; 
+            --line-dash: rgba(0, 0, 0, 0.1);
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100vh; overflow: hidden;
+            font-family: "Microsoft JhengHei", "Segoe UI", sans-serif;
+            background: linear-gradient(135deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+            perspective: 1600px;
+        }
+
+        .main-title { position: absolute; top: 15px; width: 100%; text-align: center; color: #0F2C67; z-index: 5000; }
+        .main-title h1 { margin: 0; font-size: 26px; }
+        .main-title p { margin: 5px 0 0 0; font-size: 16px; opacity: 0.8; font-weight: 700; }
+
+        /* 分隔虛線 */
+        .separator-container { position: absolute; inset: 0; z-index: 500; pointer-events: none; }
+        .dashed-line { position: absolute; left: 0; width: 100%; height: 1px; border-bottom: 1.5px dashed var(--line-dash); }
+        .line-1 { top: calc((var(--pos-1) + var(--pos-2)) / 2 + 20px); } 
+        .line-2 { top: calc((var(--pos-2) + var(--pos-3)) / 2 + 20px); } 
+        .line-3 { top: calc((var(--pos-3) + var(--pos-4)) / 2 + 20px); }
+
+        /* --- 左側按鈕：左移對齊 (90px -> 50px) --- */
+        .sidebar { position: absolute; left: 50px; top: 0; height: 100%; z-index: 4000; pointer-events: none; }
+        .nav-btn { 
+            position: absolute; left: 0; height: 38px; width: 125px; pointer-events: auto;
+            padding: 0 15px; display: flex; align-items: center;
+            background: rgba(255, 255, 255, 0.25); border: 1px solid rgba(255, 255, 255, 0.5); 
+            backdrop-filter: blur(10px); border-radius: 50px; color: var(--text-main); font-size: 13px; font-weight: 700; 
+            cursor: pointer; transition: all 0.3s ease; transform: translateY(-10%); 
+        }
+        .nav-btn::before { content: '●'; margin-right: 8px; font-size: 8px; color: #333; }
+        .btn-1 { top: var(--pos-1); } .btn-2 { top: var(--pos-2); } .btn-3 { top: var(--pos-3); } .btn-4 { top: var(--pos-4); }
+        .nav-btn.active { background: rgba(255, 255, 255, 0.8); color: #0F2C67; }
+
+        /* 文字本體與倒影 */
+        #text-overlay-layer { position: absolute; inset: 0; z-index: 4500; pointer-events: none; }
+        .text_2d {
+            position: absolute; width: var(--glass-width); text-align: center; color: var(--text-main); font-weight: 700; font-size: 17px;
+            transition: opacity 0.5s ease; transform: translate(-50%, calc(-100% + var(--text-overlap))); line-height: 1;
+        }
+        .text_2d::after {
+            content: attr(data-text); position: absolute; left: 0; right: 0; top: 100%;
+            transform: scaleY(-1) translateY(0px); 
+            background: linear-gradient(to top, rgba(26, 32, 44, 0.25) 0%, transparent 90%);
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+            opacity: 0.4; pointer-events: none;
+        }
+        .text_2d.hidden { opacity: 0; visibility: hidden; }
+
+        .tr-1 { top: var(--pos-1); } .tr-2 { top: var(--pos-2); } .tr-3 { top: var(--pos-3); } .tr-4 { top: var(--pos-4); }
+        .c1 { left: calc(50% + var(--global-x-offset) - (var(--col-gap) * 1.5)); }
+        .c2 { left: calc(50% + var(--global-x-offset) - (var(--col-gap) * 0.5)); }
+        .c3 { left: calc(50% + var(--global-x-offset) + (var(--col-gap) * 0.5)); }
+        .c4 { left: calc(50% + var(--global-x-offset) + (var(--col-gap) * 1.5)); }
+
+        /* 3D 場景層 */
+        .scene { position: absolute; inset: 0; transform-style: preserve-3d; pointer-events: none; z-index: 100; }
+        .structure-grid { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; }
+        .layer { position: absolute; left: 0; width: 100%; height: 0; transform-style: preserve-3d; transition: opacity 0.6s ease; pointer-events: auto; }
+        .layer.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        #layer1 { top: var(--pos-1); z-index: 40; } #layer2 { top: var(--pos-2); z-index: 30; }
+        #layer3 { top: var(--pos-3); z-index: 20; } #layer4 { top: var(--pos-4); z-index: 10; }
+
+        .block-wrapper {
+            position: absolute; width: var(--glass-width); height: 100px;
+            transform-style: preserve-3d; cursor: pointer; transform-origin: top center;
+            transform: translateX(-50%) rotateX(55deg); transition: transform 0.4s ease;
+        }
+        
+        .bw-c1 { left: calc(50% + var(--global-x-offset) - (var(--col-gap) * 1.5)); }
+        .bw-c2 { left: calc(50% + var(--global-x-offset) - (var(--col-gap) * 0.5)); }
+        .bw-c3 { left: calc(50% + var(--global-x-offset) + (var(--col-gap) * 0.5)); }
+        .bw-c4 { left: calc(50% + var(--global-x-offset) + (var(--col-gap) * 1.5)); }
+        .bw-r4-1 { left: calc(50% + var(--global-x-offset) - var(--col-gap)); }
+        .bw-r4-2 { left: calc(50% + var(--global-x-offset)); }
+        .bw-r4-3 { left: calc(50% + var(--global-x-offset) + var(--col-gap)); }
+
+        /* --- 水晶材質 (Alpha 0.38) --- */
+        .glass-block {
+            position: absolute; inset: 0; border-radius: 8px; transform-style: preserve-3d;
+            backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
+            border-top: 2px solid rgba(255, 255, 255, 0.95);
+            border-left: 1.5px solid rgba(255, 255, 255, 0.6);
+            border-bottom: 14px solid rgba(0, 0, 0, 0.15); 
+            box-shadow: 0 35px 70px rgba(0, 0, 0, 0.3), inset 0 0 15px rgba(255, 255, 255, 0.4);
+            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1.1); overflow: hidden;
+        }
+
+        .glass-block::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: linear-gradient(45deg, rgba(255,255,255,0) 45%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 55%);
+            transform: rotate(-15deg); pointer-events: none; z-index: 1;
+        }
+        .glass-block::after {
+            content: ''; position: absolute; top: 5px; left: 8px; width: 5px; height: 5px; 
+            background: rgba(255, 255, 255, 0.9); border-radius: 50%;
+            box-shadow: 250px 0 0 rgba(255,255,255,0.5), 0 85px 0 rgba(255,255,255,0.2);
+            pointer-events: none; z-index: 2;
+        }
+
+        /* 漸變顏色 */
+        #layer1 .glass-block { background: linear-gradient(to left, rgba(180, 100, 255, 0.38), rgba(255, 150, 180, 0.2)); } 
+        #layer2 .glass-block { background: linear-gradient(to left, rgba(80, 180, 255, 0.38), rgba(130, 255, 180, 0.2)); } 
+        #layer3 .glass-block { background: linear-gradient(to left, rgba(100, 230, 100, 0.38), rgba(220, 255, 130, 0.2)); } 
+        #layer4 .glass-block { background: linear-gradient(to left, rgba(255, 210, 50, 0.38), rgba(255, 140, 80, 0.2)); } 
+
+        .block-wrapper:not(.is-shattered):hover { transform: translateX(-50%) rotateX(55deg) translateZ(15px); }
+
+        /* 被選中：淡粉紅暈染 (Alpha 0.3) */
+        .block-wrapper.is-shattered { transform: translateX(-50%) rotateX(55deg) translateZ(10px); }
+        .block-wrapper.is-shattered .glass-block {
+            background: linear-gradient(to left, rgba(255, 80, 110, 0.3), rgba(255, 255, 255, 0.1)) !important;
+            border: 1.5px solid rgba(255, 100, 120, 0.6) !important;
+            border-bottom: 14px solid rgba(180, 50, 50, 0.25) !important;
+            box-shadow: 0 10px 30px rgba(255, 40, 40, 0.2);
+        }
+
+        /* 碎裂紋 */
+        .crack-layer {
+            position: absolute; inset: 0; opacity: 0; pointer-events: none; z-index: 5;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 270 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='white' stroke-width='0.5' stroke-opacity='0.6'%3E%3Cpath d='M135 50 L210 10 M135 50 L260 45 M135 50 L230 90 M135 50 L135 98 M135 50 L40 95 M135 50 L10 55 M135 50 L45 15'/%3E%3Cpath d='M135 50 L160 35 M135 50 L180 65 M135 50 L120 80 M135 50 L80 45' stroke-width='0.7'/%3E%3Ccircle cx='135' cy='50' r='1.5' fill='white'/%3E%3C/g%3E%3C/svg%3E");
+            background-size: cover; transition: opacity 0.3s ease;
+        }
+        .block-wrapper.is-shattered .crack-layer { opacity: 1; }
+    </style>
+</head>
+<body>
+
+    <div class="main-title">
+        <h1>船隊有效管理</h1>
+        <p>Effective Management of the Fleet</p>
+    </div>
+
+    <div class="separator-container">
+        <div class="dashed-line line-1"></div><div class="dashed-line line-2"></div><div class="dashed-line line-3"></div>
+    </div>
+
+    <div class="sidebar">
+        <div class="nav-btn btn-1" onclick="toggleLayer('layer1', this)">管理平台/系統</div>
+        <div class="nav-btn btn-2" onclick="toggleLayer('layer2', this)">岸基管理</div>
+        <div class="nav-btn btn-3" onclick="toggleLayer('layer3', this)">船上管理</div>
+        <div class="nav-btn btn-4" onclick="toggleLayer('layer4', this)">實際執行</div>
+    </div>
+
+    <div id="text-overlay-layer">
+        <div class="text_2d tr-1 c1 hidden" data-text="SQMS / SOPs & Policies" data-for="layer1">SQMS / SOPs & Policies</div>
+        <div class="text_2d tr-1 c2 hidden" data-text="PMS / FLOW 作業平台" data-for="layer1">PMS / FLOW 作業平台</div>
+        <div class="text_2d tr-1 c3 hidden" data-text="合理的表單記錄系統" data-for="layer1">合理的表單記錄系統</div>
+        <div class="text_2d tr-1 c4 hidden" data-text="Class/廠商等第三方支持" data-for="layer1">Class/廠商等第三方支持</div>
+        
+        <div class="text_2d tr-2 c1 hidden" data-text="岸基督導監管和跟蹤" data-for="layer2">岸基督導監管和跟蹤</div>
+        <div class="text_2d tr-2 c2 hidden" data-text="機能組處支持" data-for="layer2">機能組處支持</div>
+        <div class="text_2d tr-2 c3 hidden" data-text="培訓和認證" data-for="layer2">培訓和認證</div>
+        <div class="text_2d tr-2 c4 hidden" data-text="人員評核和調度" data-for="layer2">人員評核和調度</div>
+        
+        <div class="text_2d tr-3 c1 hidden" data-text="船上主管監管、複查" data-for="layer3">船上主管監管、複查</div>
+        <div class="text_2d tr-3 c2 hidden" data-text="及時報告和反饋" data-for="layer3">及時報告和反饋</div>
+        <div class="text_2d tr-3 c3 hidden" data-text="船上訓練和演練" data-for="layer3">船上訓練和演練</div>
+        <div class="text_2d tr-3 c4 hidden" data-text="船上人員的自我管理" data-for="layer3">船上人員的自我管理</div>
+        
+        <div class="text_2d tr-4 hidden" data-text="作業徹底和到位" data-for="layer4" style="left: calc(50% + var(--global-x-offset) - var(--col-gap));">作業徹底和到位</div>
+        <div class="text_2d tr-4 hidden" data-text="設備正確維護測試保養" data-for="layer4" style="left: calc(50% + var(--global-x-offset));">設備正確維護測試保養</div>
+        <div class="text_2d tr-4 hidden" data-text="記錄完整正確" data-for="layer4" style="left: calc(50% + var(--global-x-offset) + var(--col-gap));">記錄完整正確</div>
+    </div>
+
+    <div class="scene">
+        <div class="structure-grid">
+            <div class="layer hidden" id="layer1">
+                <div class="block-wrapper bw-c1" onclick="shatter(this)"><div class="glass-block"><div class="crack-layer"></div></div></div>
+                <div class="block-wrapper bw-c2" onclick="shatter(this)"><div class="glass-block"><div class="crack-layer"></div></div></div>
+                <div class="block-wrapper bw-c3" onclick="shatter(this)"><div class="glass-block"><div class="crack-layer"></div></div></div>
+                <div class="block-wrapper bw-c4" onclick="shatter(this)"><div class="glass-block"><div class="crack-layer"></div></div></div>
+            </div>
+            <div class="layer hidden" id="layer2">
+                <div class="block-wrapper bw-c1" onclick="shatter(this)"><div class="glass-block"><div class="crack-layer"></div></div></div>
+                <div class="block-wrapper bw-c2" onclick="shatter(this)"><div class="glass-block"><div class="crack-layer"></div></div></div>
+                <div class="block-wrapper bw-c3" onclick="shatter(this)"><div class="glass-block"><div class="crack-layer"></div></div></div>
+                <div class="block-wrapper bw-c4" onclick="shatter(this)"><div class="glass-block"><div class="crack-layer"></div></div></div>
+            </div>
+            <div class="layer hidden" id="layer3">
+                <div class="block-wrapper bw-c1" onclick="shatter(this)"><div class="glass-block"><div class="crack-layer"></div></div></div>
+                <div class="block-wrapper bw-c2" onclick="shatter(this)"><div class="glass-block"><div class="crack-layer"></div></div></div>
+                <div class="block-wrapper bw-c3" onclick="shatter(this)"><div class="glass-block"><div class="crack-layer"></div></div></div>
+                <div class="block-wrapper bw-c4" onclick="shatter(this)"><div class="glass-block"><div class="crack-layer"></div></div></div>
+            </div>
+            <div class="layer hidden" id="layer4">
+                <div class="block-wrapper bw-r4-1" onclick="shatter(this)"><div class="glass-block"><div class="crack-layer"></div></div></div>
+                <div class="block-wrapper bw-r4-2" onclick="shatter(this)"><div class="glass-block"><div class="crack-layer"></div></div></div>
+                <div class="block-wrapper bw-r4-3" onclick="shatter(this)"><div class="glass-block"><div class="crack-layer"></div></div></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleLayer(layerId, btn) {
+            const layer = document.getElementById(layerId);
+            const isShowing = layer.classList.toggle('hidden') === false;
+            btn.classList.toggle('active', isShowing);
+            document.querySelectorAll(`.text_2d[data-for="${layerId}"]`).forEach(t => t.classList.toggle('hidden', !isShowing));
+        }
+        function shatter(wrapper) {
+            wrapper.classList.toggle('is-shattered');
+        }
+    </script>
+</body>
+</html>

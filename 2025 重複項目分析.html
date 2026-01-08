@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025年船隊缺失重複項目統計</title>
+    <style>
+        body {
+            font-family: "Microsoft JhengHei", "Noto Sans TC", Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .summary-box {
+            background-color: #fff;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .category-container {
+            background-color: #fff;
+            margin-bottom: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 5px solid #3498db;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .category-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #2980b9;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .risk-badge {
+            font-size: 0.8em;
+            background-color: #e74c3c;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+        .section-title {
+            font-weight: bold;
+            color: #555;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            background-color: #ecf0f1;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+        .keyword-tag {
+            display: inline-block;
+            background-color: #e1f5fe;
+            color: #0277bd;
+            padding: 2px 8px;
+            margin: 2px;
+            border-radius: 12px;
+            font-size: 0.9em;
+            border: 1px solid #b3e5fc;
+        }
+        .count-badge {
+            background-color: #0277bd;
+            color: white;
+            border-radius: 50%;
+            padding: 0 5px;
+            font-size: 0.8em;
+            margin-left: 4px;
+        }
+        ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 5px;
+        }
+        .case-text {
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 0.95em;
+            background-color: #fafafa;
+            padding: 2px 5px;
+            color: #444;
+        }
+        .btn-copy {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #27ae60;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .btn-copy:hover {
+            background-color: #219150;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>2025年船隊缺失重複項目統計</h1>
+    
+    <div class="summary-box">
+        <h3>分析說明</h3>
+        <p>本報告基於2025年船隊檢查數據，針對各個功能模組進行歸納。重點提取了高頻出現的設備關鍵詞、典型案例及針對性的改善建議。請重點關注「記錄缺失」、「油料/化學藥劑管理」及「航行安全」相關的高風險項目。</p>
+    </div>
+
+    <!-- START OF ANALYSIS CONTENT -->
+    <div id="analysis-content">
+
+        <!-- 記錄相關 -->
+        <div class="category-container">
+            <div class="category-title">
+                記錄缺失、錯誤 (Records Missing/Incorrect)
+            </div>
+            <div class="section-title">關鍵詞與頻次 (Keywords)</div>
+            <div>
+                <span class="keyword-tag">Oil Record Book (油類記錄簿) <span class="count-badge">8</span></span>
+                <span class="keyword-tag">Log Book (航海/輪機日誌) <span class="count-badge">6</span></span>
+                <span class="keyword-tag">Cargo Record Book (貨物記錄簿) <span class="count-badge">4</span></span>
+                <span class="keyword-tag">Signature (簽名遺漏) <span class="count-badge">4</span></span>
+                <span class="keyword-tag">Code C.11.4 (ORB編碼錯誤) <span class="count-badge">3</span></span>
+                <span class="keyword-tag">Garbage Record Book (垃圾記錄簿) <span class="count-badge">2</span></span>
+            </div>
+            <div class="section-title">典型案例 (Cases)</div>
+            <ul>
+                <li><span class="case-text">ORB Part I: Missed entry code C.11.4 for weekly recording of bilge water tank. (油類記錄簿第一部分：遺漏每週汙水櫃紀錄代碼 C.11.4)</span></li>
+                <li><span class="case-text">Navigation Log Book: Corrections made using white-out fluid instead of single line strike-through and initial. (航海日誌：使用修正液修改錯誤，而非畫線刪除並簽名)</span></li>
+                <li><span class="case-text">The ROB of low sulphur fuel recorded as total only; MARPOL requires separate tank breakdown. (低硫燃油存量僅記錄總數，未依 MARPOL 規定分艙記錄)</span></li>
+            </ul>
+            <div class="section-title">改善建議 (Improvements)</div>
+            <ul>
+                <li><strong>加強法規培訓：</strong>針對輪機員進行 MARPOL 附錄 I (ORB) 代碼填寫的專項培訓，特別是 C.11.4 和 H.26.4 的區別。</li>
+                <li><strong>交叉檢查機制：</strong>落實「大副/大管輪每週覆核，船長每月總檢」制度，重點檢查修改處是否規範（禁止塗改液）。</li>
+                <li><strong>電子化輔助：</strong>若條件允許，推廣使用電子記錄簿或在填寫前使用鉛筆草稿經確認後再正式填寫。</li>
+            </ul>
+        </div>
+
+        <div class="category-container">
+            <div class="category-title">
+                記錄與作業交叉驗證不符 (Cross-verification Mismatch)
+            </div>
+            <div class="section-title">關鍵詞與頻次 (Keywords)</div>
+            <div>
+                <span class="keyword-tag">Alarm History (警報歷史記錄) <span class="count-badge">4</span></span>
+                <span class="keyword-tag">Rest Hours (工時記錄) <span class="count-badge">3</span></span>
+                <span class="keyword-tag">Bell Book (車鐘記錄簿) <span class="count-badge">2</span></span>
+                <span class="keyword-tag">ODME (排油監控系統) <span class="count-badge">2</span></span>
+                <span class="keyword-tag">Drill Record (演習記錄) <span class="count-badge">2</span></span>
+            </div>
+            <div class="section-title">典型案例 (Cases)</div>
+            <ul>
+                <li><span class="case-text">Steering gear test recorded in checklist but no corresponding alarm printout found in E/R alarm history. (檢查表記錄已測試舵機，但機艙警報歷史無對應記錄)</span></li>
+                <li><span class="case-text">Mismatch between Bridge Bell Book and Engine Room Telegraph Log regarding 'Stop Engine' timing. (駕駛台車鐘簿與機艙車鐘記錄關於「完車」時間不一致)</span></li>
+                <li><span class="case-text">ODME simulation test recorded in ORB, but GPS position in ODME data log shows vessel was in port (impossible). (ORB 記錄進行了 ODME 測試，但數據日誌顯示當時船在港內)</span></li>
+            </ul>
+            <div class="section-title">改善建議 (Improvements)</div>
+            <ul>
+                <li><strong>證據鏈完整性：</strong>所有測試記錄（如舵機、ODME）必須保留機器列印條（Printout）並黏貼於記錄簿旁作為佐證。</li>
+                <li><strong>時間同步：</strong>每週同步駕駛台、機艙及所有電子設備（VDR, OWS, ECDIS）的時間，確保記錄一致。</li>
+                <li><strong>真實性稽核：</strong>訪船時重點抽查 VDR 數據與紙本記錄的比對，嚴厲禁止「造假」演習或測試記錄。</li>
+            </ul>
+        </div>
+
+        <!-- 防污與環境 -->
+        <div class="category-container">
+            <div class="category-title">
+                油料/化學藥劑管理 (Oil/Chemical Management)
+            </div>
+            <div class="section-title">關鍵詞與頻次 (Keywords)</div>
+            <div>
+                <span class="keyword-tag">Lub Oil Analysis (滑油化驗) <span class="count-badge">5</span></span>
+                <span class="keyword-tag">Sample (取樣/樣品) <span class="count-badge">4</span></span>
+                <span class="keyword-tag">Bunker (燃油) <span class="count-badge">3</span></span>
+                <span class="keyword-tag">Chemical Storage (化學品存放) <span class="count-badge">2</span></span>
+                <span class="keyword-tag">Hydraulic Oil (液壓油) <span class="count-badge">2</span></span>
+            </div>
+            <div class="section-title">典型案例 (Cases)</div>
+            <ul>
+                <li><span class="case-text">Lub oil analysis overdue (Last: Jan 2025, Requirement: Quarterly). (滑油化驗過期，上次為1月，要求為每季度)</span></li>
+                <li><span class="case-text">New bunker used before analysis results received; procedure generic without specific safety details. (化驗結果出爐前即使用新燃油，且缺乏詳細風險評估程序)</span></li>
+                <li><span class="case-text">Abnormal results in hydraulic remote control valve system oil sample. (液壓遙控閥系統油樣化驗結果異常)</span></li>
+            </ul>
+            <div class="section-title">改善建議 (Improvements)</div>
+            <ul>
+                <li><strong>化驗追蹤系統：</strong>建立全船油樣化驗看板（Dashboard），在到期前一個月自動提醒輪機長。</li>
+                <li><strong>燃油使用程序：</strong>修訂 SMS，嚴格規定在新油化驗報告收到前，除緊急情況外不得使用，若必須使用需經過技術部特別批准並採取過濾措施。</li>
+            </ul>
+        </div>
+
+        <div class="category-container">
+            <div class="category-title">
+                防污/污處設備 (Pollution Prevention Equipment)
+            </div>
+            <div class="section-title">關鍵詞與頻次 (Keywords)</div>
+            <div>
+                <span class="keyword-tag">OWS (油水分離器) <span class="count-badge">3</span></span>
+                <span class="keyword-tag">Sewage Plant (生活污水處理裝置) <span class="count-badge">2</span></span>
+                <span class="keyword-tag">Overboard Valve (排海閥) <span class="count-badge">2</span></span>
+                <span class="keyword-tag">SOPEP Pump (防污泵) <span class="count-badge">1</span></span>
+            </div>
+            <div class="section-title">典型案例 (Cases)</div>
+            <ul>
+                <li><span class="case-text">SOPEP wilden pump not working during testing. (SOPEP 氣動泵測試時無法運作)</span></li>
+                <li><span class="case-text">OWS 15ppm control light on bridge constantly off/malfunction. (駕駛台 OWS 15ppm 指示燈故障)</span></li>
+                <li><span class="case-text">Overboard valve key kept by Bosun, not in sealed box. (排海閥鑰匙由水手長保管，未放置於密封箱內)</span></li>
+            </ul>
+            <div class="section-title">改善建議 (Improvements)</div>
+            <ul>
+                <li><strong>關鍵設備封條管理：</strong>排海閥鑰匙必須由輪機長親自保管或放置於駕駛台/集控室的易碎玻璃盒中，並建立使用登記制度。</li>
+                <li><strong>功能測試：</strong>SOPEP 設備應納入每月演習實際操作，而不僅僅是外觀檢查。</li>
+            </ul>
+        </div>
+
+        <div class="category-container">
+            <div class="category-title">
+                垃圾管理 (Garbage Management)
+            </div>
+            <div class="section-title">關鍵詞與頻次 (Keywords)</div>
+            <div>
+                <span class="keyword-tag">Garbage Bin (垃圾桶) <span class="count-badge">4</span></span>
+                <span class="keyword-tag">Plastics (塑膠) <span class="count-badge">3</span></span>
+                <span class="keyword-tag">E-waste (電子垃圾) <span class="count-badge">2</span></span>
+                <span class="keyword-tag">Garbage Plan (垃圾管理計劃) <span class="count-badge">2</span></span>
+            </div>
+            <div class="section-title">典型案例 (Cases)</div>
+            <ul>
+                <li><span class="case-text">E-waste stored in E/R, contrary to garbage plan (designated poop deck). (電子垃圾存放在機艙，違反垃圾計劃指定的船尾甲板位置)</span></li>
+                <li><span class="case-text">Plastic found in bins at Galley/Master's cabin, segregation not compliant. (廚房/船長室垃圾桶發現混入塑膠，分類不合規)</span></li>
+                <li><span class="case-text">Stbd Tally room used to dump plastic garbage. (右舷理貨間被用來傾倒塑膠垃圾)</span></li>
+            </ul>
+            <div class="section-title">改善建議 (Improvements)</div>
+            <ul>
+                <li><strong>源頭分類：</strong>在所有垃圾桶張貼清晰的圖示分類標籤（中英文+圖片），特別是住艙和廚房區域。</li>
+                <li><strong>指定區域存放：</strong>嚴格按照垃圾管理計劃（Garbage Management Plan）存放特定類別垃圾，若實際情況不符，應修改計劃或歸位垃圾。</li>
+            </ul>
+        </div>
+
+        <!-- 航行安全 -->
+        <div class="category-container">
+            <div class="category-title">
+                航行安全管理 (Navigation Safety Management)
+            </div>
+            <div class="section-title">關鍵詞與頻次 (Keywords)</div>
+            <div>
+                <span class="keyword-tag">Passage Plan (航行計劃) <span class="count-badge">5</span></span>
+                <span class="keyword-tag">Position Fixing (定位) <span class="count-badge">4</span></span>
+                <span class="keyword-tag">UKC (富餘水深) <span class="count-badge">2</span></span>
+                <span class="keyword-tag">ECDIS (電子海圖) <span class="count-badge">2</span></span>
+                <span class="keyword-tag">XTD (偏航距離) <span class="count-badge">1</span></span>
+            </div>
+            <div class="section-title">典型案例 (Cases)</div>
+            <ul>
+                <li><span class="case-text">Only GPS positions used during transit of Dover Straits; no visual/radar fixes. (通過多佛海峽僅使用 GPS 定位，無雷達或目視交叉定位)</span></li>
+                <li><span class="case-text">UKC calculation used incorrect tide height (Departure port tide used for Arrival port). (UKC 計算使用了錯誤的潮汐高度，竟使用出發港潮汐計算到達港)</span></li>
+                <li><span class="case-text">Cross Pacific passage: No celestial sights carried out. (跨太平洋航行期間未執行天文定位/測天)</span></li>
+            </ul>
+            <div class="section-title">改善建議 (Improvements)</div>
+            <ul>
+                <li><strong>航行紀律：</strong>嚴格執行「多種手段定位」政策，特別是在狹水道和近岸航行，必須有雷達（VR/LOP）或目視定位記錄。</li>
+                <li><strong>計畫審核：</strong>船長需仔細審核二副制定的 Passage Plan，特別是 UKC 計算參數和 XTD 設定，避免邏輯錯誤。</li>
+            </ul>
+        </div>
+
+         <div class="category-container">
+            <div class="category-title">
+                通訊設備 (Communication Equipment)
+            </div>
+            <div class="section-title">關鍵詞與頻次 (Keywords)</div>
+            <div>
+                <span class="keyword-tag">VHF (高頻無線電) <span class="count-badge">2</span></span>
+                <span class="keyword-tag">MF/HF (中高頻無線電) <span class="count-badge">1</span></span>
+                <span class="keyword-tag">Talk-back System (對講系統) <span class="count-badge">1</span></span>
+            </div>
+            <div class="section-title">典型案例 (Cases)</div>
+            <ul>
+                <li><span class="case-text">VHF talk-back unit cannot be connected to bridge-wing plug points. (VHF 對講單元無法連接到駕駛台側翼的插座)</span></li>
+                <li><span class="case-text">MF/HF DSC test call records missing for last month. (上個月 MF/HF DSC 測試呼叫記錄缺失)</span></li>
+            </ul>
+            <div class="section-title">改善建議 (Improvements)</div>
+            <ul>
+                <li><strong>設備兼容性測試：</strong>確保所有移動式通訊設備與固定介面（如駕駛台側翼插座）匹配。</li>
+                <li><strong>法定測試：</strong>GMDSS 設備的日/週/月測試必須落實並由專人（通常是二副或三副）記錄。</li>
+            </ul>
+        </div>
+
+        <!-- 機艙與設備 -->
+        <div class="category-container">
+            <div class="category-title">
+                主機/輔機設備 (Main Engine / Aux Engine)
+            </div>
+            <div class="section-title">關鍵詞與頻次 (Keywords)</div>
+            <div>
+                <span class="keyword-tag">Generator (發電機) <span class="count-badge">6</span></span>
+                <span class="keyword-tag">Leak/Leakage (洩漏) <span class="count-badge">5</span></span>
+                <span class="keyword-tag">Insulation (隔熱/絕緣) <span class="count-badge">4</span></span>
+                <span class="keyword-tag">Fuel Pump (燃油泵) <span class="count-badge">2</span></span>
+                <span class="keyword-tag">Exhaust Pipe (排煙管) <span class="count-badge">2</span></span>
+            </div>
+            <div class="section-title">典型案例 (Cases)</div>
+            <ul>
+                <li><span class="case-text">Gap of 6cm in lagging at M/E exhaust pipe hot section (Fire risk). (主機排煙管高溫區隔熱棉有 6cm 間隙，存在火災風險)</span></li>
+                <li><span class="case-text">Minor leaks detected at fuel pump 1 and 3 of AE 1. (1號輔機的 1號和 3號燃油泵發現輕微洩漏)</span></li>
+                <li><span class="case-text">AE No.3 running with active alarm "Monitoring System Failed". (3號輔機帶病運行，監控系統故障警報未處理)</span></li>
+            </ul>
+            <div class="section-title">改善建議 (Improvements)</div>
+            <ul>
+                <li><strong>高溫點熱成像：</strong>每週使用紅外熱像儀掃描機艙，特別是排煙管和增壓器周圍，杜絕「熱點」。</li>
+                <li><strong>零洩漏計畫：</strong>發現燃油/滑油微漏應視為緊急事項處理，嚴禁忽視「小漏」。</li>
+            </ul>
+        </div>
+        
+        <div class="category-container">
+            <div class="category-title">
+                電器設備 (Electrical Equipment)
+            </div>
+            <div class="section-title">關鍵詞與頻次 (Keywords)</div>
+            <div>
+                <span class="keyword-tag">Insulation (絕緣) <span class="count-badge">5</span></span>
+                <span class="keyword-tag">Switchboard (配電盤) <span class="count-badge">3</span></span>
+                <span class="keyword-tag">Alarm Setting (警報設定) <span class="count-badge">2</span></span>
+                <span class="keyword-tag">Socket (插座) <span class="count-badge">2</span></span>
+            </div>
+            <div class="section-title">典型案例 (Cases)</div>
+            <ul>
+                <li><span class="case-text">Low insulation alarm set to 'suspend' mode; reading 0.01 Mohm when monitored. (低絕緣警報被設為「暫停」模式，實際讀數僅 0.01 兆歐)</span></li>
+                <li><span class="case-text">Non-IP56 sockets used in officer laundry (wet area). (洗衣間使用了非防水等級 IP56 的插座)</span></li>
+                <li><span class="case-text">Cargo light holders not made of non-conductive materials. (貨艙燈座未使用非導電材料)</span></li>
+            </ul>
+            <div class="section-title">改善建議 (Improvements)</div>
+            <ul>
+                <li><strong>絕緣監控：</strong>嚴禁人為關閉或調低絕緣警報閾值。發現低絕緣（<1MΩ）必須立即查找接地點。</li>
+                <li><strong>防水用電：</strong>檢查所有潮濕區域（甲板、洗衣房、廚房）的電器設施是否符合防水等級（IP56+）。</li>
+            </ul>
+        </div>
+
+        <!-- 救生與消防 -->
+        <div class="category-container">
+            <div class="category-title">
+                救生設備 (Life Saving Appliances)
+            </div>
+            <div class="section-title">關鍵詞與頻次 (Keywords)</div>
+            <div>
+                <span class="keyword-tag">Lifeboat (救生艇) <span class="count-badge">6</span></span>
+                <span class="keyword-tag">Liferaft (救生筏) <span class="count-badge">3</span></span>
+                <span class="keyword-tag">Painter (艇首纜) <span class="count-badge">2</span></span>
+                <span class="keyword-tag">Sea Anchor (海錨) <span class="count-badge">1</span></span>
+                <span class="keyword-tag">Limit Switch (限位開關) <span class="count-badge">1</span></span>
+            </div>
+            <div class="section-title">典型案例 (Cases)</div>
+            <ul>
+                <li><span class="case-text">Lifeboat engine exhaust pipe insulation missing. (救生艇引擎排氣管隔熱層缺失)</span></li>
+                <li><span class="case-text">Port lifeboat painter release device seized/frozen. (左舷救生艇艇首纜釋放裝置卡死/凍結)</span></li>
+                <li><span class="case-text">Liferaft not secured to cradle (loose). (救生筏未固定在支架上)</span></li>
+            </ul>
+            <div class="section-title">改善建議 (Improvements)</div>
+            <ul>
+                <li><strong>活動部件保養：</strong>救生艇釋放裝置（Release gear）、艇首纜釋放夾等關鍵活動部件需每週活動並加注潤滑脂。</li>
+                <li><strong>完整性檢查：</strong>大副需檢查所有救生設備的附件（如海錨、隔熱層）是否歸位且完好。</li>
+            </ul>
+        </div>
+
+        <div class="category-container">
+            <div class="category-title">
+                消防設備 (Fire Fighting Equipment)
+            </div>
+            <div class="section-title">關鍵詞與頻次 (Keywords)</div>
+            <div>
+                <span class="keyword-tag">Fire Detection (火災探測) <span class="count-badge">3</span></span>
+                <span class="keyword-tag">Zone Disabled (探測區隔離) <span class="count-badge">2</span></span>
+                <span class="keyword-tag">Fire Hydrant (消防栓) <span class="count-badge">2</span></span>
+                <span class="keyword-tag">Extinguisher (滅火器) <span class="count-badge">1</span></span>
+            </div>
+            <div class="section-title">典型案例 (Cases)</div>
+            <ul>
+                <li><span class="case-text">Fire detection Zone 12 disabled for hot work but not re-enabled after work completion. (12號火災探測區因熱工作業被隔離，但完工後未恢復)</span></li>
+                <li><span class="case-text">Fire hydrant in E/R obstructed by machinery parts. (機艙消防栓被機械備件阻擋)</span></li>
+                <li><span class="case-text">CO2 cylinder check nuts missing in CO2 room. (CO2 間氣瓶固定螺母缺失)</span></li>
+            </ul>
+            <div class="section-title">改善建議 (Improvements)</div>
+            <ul>
+                <li><strong>隔離復位程序：</strong>建立火警探測系統隔離登記簿，交班時必須確認所有隔離區域的狀態，完工後立即復位。</li>
+                <li><strong>通道暢通：</strong>消防設備（栓、滅火器、皮龍箱）前方 1 米內嚴禁堆放任何雜物。</li>
+            </ul>
+        </div>
+
+        <!-- 甲板與貨物 -->
+        <div class="category-container">
+            <div class="category-title">
+                鏽蝕和甲板保養 (Corrosion & Deck Maintenance)
+            </div>
+            <div class="section-title">關鍵詞與頻次 (Keywords)</div>
+            <div>
+                <span class="keyword-tag">Corrosion/Rust (鏽蝕) <span class="count-badge">10+</span></span>
+                <span class="keyword-tag">Vent/Ventilation (通風筒) <span class="count-badge">4</span></span>
+                <span class="keyword-tag">Hatch Cover (艙蓋) <span class="count-badge">3</span></span>
+                <span class="keyword-tag">Platform/Grating (平台/格柵) <span class="count-badge">2</span></span>
+            </div>
+            <div class="section-title">典型案例 (Cases)</div>
+            <ul>
+                <li><span class="case-text">Heavy corrosion on forecastle gooseneck vent and No.5 ballast tank manhole. (艏樓鵝頸通風口及5號壓載艙人孔蓋嚴重鏽蝕)</span></li>
+                <li><span class="case-text">Pilot ladder air motor mufflers severely rusted. (引水梯氣動馬達消音器嚴重鏽蝕)</span></li>
+                <li><span class="case-text">Safety protection chain shackles painted over and seized. (安全鏈卸扣被油漆覆蓋導致卡死)</span></li>
+            </ul>
+            <div class="section-title">改善建議 (Improvements)</div>
+            <ul>
+                <li><strong>除鏽計畫：</strong>重點加強通風筒（Vent heads）、空氣管（Air pipes）及人孔蓋邊緣的除鏽，這些是PSC檢查重點。</li>
+                <li><strong>活絡保養：</strong>切勿將油漆塗抹在活動部件（如卸扣銷、螺桿）上，應使用牛油保護。</li>
+            </ul>
+        </div>
+
+        <div class="category-container">
+            <div class="category-title">
+                吊重/轉運/舷梯設備 (Lifting/Transfer/Gangway)
+            </div>
+            <div class="section-title">關鍵詞與頻次 (Keywords)</div>
+            <div>
+                <span class="keyword-tag">Crane (克令吊) <span class="count-badge">4</span></span>
+                <span class="keyword-tag">Gangway (舷梯) <span class="count-badge">3</span></span>
+                <span class="keyword-tag">Personnel Transfer (人員轉運) <span class="count-badge">2</span></span>
+                <span class="keyword-tag">Pilot Ladder (引水梯) <span class="count-badge">2</span></span>
+            </div>
+            <div class="section-title">典型案例 (Cases)</div>
+            <ul>
+                <li><span class="case-text">Used crane for personnel transfer without certification and contingency plan. (使用未經認證的克令吊進行人員轉運，且無應急預案)</span></li>
+                <li><span class="case-text">10m portable gangway stanchion base deformed/bent. (10米手提舷梯支柱底座變形彎曲)</span></li>
+                <li><span class="case-text">Pilot ladder man ropes over 1 year old. (引水梯扶手繩使用超過一年)</span></li>
+            </ul>
+            <div class="section-title">改善建議 (Improvements)</div>
+            <ul>
+                <li><strong>專用證書：</strong>嚴禁使用「貨物吊（Cargo Crane）」吊運人員，除非該設備證書明確註明「Approved for Personnel Transfer」。</li>
+                <li><strong>引水梯管理：</strong>建立引水梯屬具（繩索、踏板）的更換記錄標籤，嚴格遵守 ISO 799 標準。</li>
+            </ul>
+        </div>
+
+        <!-- 人員與管理 -->
+        <div class="category-container">
+            <div class="category-title">
+                實操或業務能力不足 (Operational Competence)
+            </div>
+            <div class="section-title">關鍵詞與頻次 (Keywords)</div>
+            <div>
+                <span class="keyword-tag">Familiar (熟悉度) <span class="count-badge">5</span></span>
+                <span class="keyword-tag">Drill (演習) <span class="count-badge">3</span></span>
+                <span class="keyword-tag">Calibration (校正) <span class="count-badge">2</span></span>
+                <span class="keyword-tag">Emergency Stop (緊急停止) <span class="count-badge">1</span></span>
+            </div>
+            <div class="section-title">典型案例 (Cases)</div>
+            <ul>
+                <li><span class="case-text">Officer unable to explain DOP error and multi-path error on GPS. (駕駛員無法解釋 GPS 的 DOP 誤差及多路徑誤差)</span></li>
+                <li><span class="case-text">Crew unable to demonstrate calibration of portable gas detector (Tankscope). (船員無法演示可燃氣體探測器的校正)</span></li>
+                <li><span class="case-text">Crew unfamiliar with "Emergency Stop Override" functions. (船員不熟悉緊急停止的超控功能)</span></li>
+            </ul>
+            <div class="section-title">改善建議 (Improvements)</div>
+            <ul>
+                <li><strong>在船培訓：</strong>利用每週演習時間，隨機抽取船員進行設備操作考核（如氣體偵測器、ECDIS設定、緊急發電機啟動）。</li>
+                <li><strong>情境問答：</strong>船長/輪機長應定期詢問駕駛員/輪機員關於系統原理的問題，而非僅限於按按鈕。</li>
+            </ul>
+        </div>
+
+        <div class="category-container">
+            <div class="category-title">
+                工時與內務 (MLC & Hygiene)
+            </div>
+            <div class="section-title">關鍵詞與頻次 (Keywords)</div>
+            <div>
+                <span class="keyword-tag">Rest Hours (休息時間) <span class="count-badge">4</span></span>
+                <span class="keyword-tag">Galley (廚房) <span class="count-badge">3</span></span>
+                <span class="keyword-tag">Food Storage (食物儲存) <span class="count-badge">2</span></span>
+                <span class="keyword-tag">Cleanliness (清潔) <span class="count-badge">2</span></span>
+            </div>
+            <div class="section-title">典型案例 (Cases)</div>
+            <ul>
+                <li><span class="case-text">Senior officers filling up rest hour records on behalf of crew (Not allowed). (高級船員代填船員休息時間記錄，不合規)</span></li>
+                <li><span class="case-text">Moldy vegetables found in fridge; fish and veg stored together. (冰箱內蔬菜發霉；魚類與蔬菜混放)</span></li>
+                <li><span class="case-text">Chopping boards not color-coded. (切菜板未依顏色區分生熟食)</span></li>
+            </ul>
+            <div class="section-title">改善建議 (Improvements)</div>
+            <ul>
+                <li><strong>真實記錄：</strong>工時記錄必須由本人簽字確認，嚴禁代簽。</li>
+                <li><strong>廚房衛生：</strong>嚴格執行「生熟分離」，清理過期/變質食物，保持冷庫地板清潔無積水。</li>
+            </ul>
+        </div>
+
+    </div>
+    <!-- END OF ANALYSIS CONTENT -->
+
+    <div style="text-align: center;">
+        <p><i>報告生成時間：2026年1月7日</i></p>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FPMC 2025 回顧 - 航程紀實</title>
+    <style>
+        :root {
+            /* Dreamy Theme: Clear Dawn at Sea */
+            --bg-gradient: linear-gradient(180deg, #FFDEE9 0%, #B5FFFC 100%);
+            --bg-overlay: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 70%);
+            
+            --text-dark: #4A5568;
+            --timeline-color: #A0C4FF; /* Soft Blue horizon line */
+            
+            /* Achieved Colors (Deep Blue & Gold) */
+            --ach-blue-bg: rgba(15, 44, 103, 0.9);
+            --ach-gold: #FFD700;
+
+            /* Encountered Colors (Pastel Coral/Rose) */
+            --enc-bg: rgba(255, 235, 235, 0.85);
+            --enc-border: #FC8181;
+            --enc-text: #9B2C2C;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Microsoft JhengHei', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-gradient);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden; /* No scrolling */
+            position: relative;
+        }
+        
+        body::before {
+            content: ''; position: absolute; top:0; left:0; right:0; bottom:0;
+            background: var(--bg-overlay); pointer-events: none;
+        }
+
+        h1 {
+            margin: 3vh 0 2vh;
+            font-weight: 600;
+            color: var(--text-dark);
+            letter-spacing: 2px;
+            font-size: 1.8rem;
+            z-index: 10;
+            text-shadow: 0 2px 10px rgba(255,255,255,0.7);
+        }
+
+        /* Controls */
+        .controls {
+            margin-bottom: 4vh;
+            display: flex;
+            gap: 20px;
+            z-index: 10;
+        }
+
+        .filter-btn {
+            padding: 10px 24px;
+            border: 3px solid transparent;
+            background-image: linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.5)), linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.7));
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            color: var(--text-dark);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .filter-btn:hover { transform: translateY(-2px); background-color: rgba(255,255,255,0.7); }
+
+        /* --- Active State for Achieved Button (Deep Blue & Gold) --- */
+        #btn-achieved.active {
+            color: #FFD700; /* Gold Text */
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            background-color: #0F2C67; /* Deep Blue Background */
+            border: 3px solid transparent;
+            background-image: linear-gradient(#0F2C67, #0F2C67), linear-gradient(45deg, #FFD700, #FFB900, #FFF8DC, #FFD700);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.4);
+        }
+
+        #btn-encountered.active {
+            background: var(--enc-bg); border-color: var(--enc-border); color: var(--enc-text);
+            box-shadow: 0 4px 20px rgba(252, 129, 129, 0.4);
+            background-image: none; background-clip: border-box; border: 3px solid var(--enc-border);
+        }
+
+        /* --- The Main Timeline Container --- */
+        .timeline-container {
+            position: relative;
+            width: 94vw;
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 5vh;
+        }
+
+        .horizon-line {
+            position: absolute;
+            top: 50%; left: 0; width: 100%; height: 4px;
+            background: var(--timeline-color); border-radius: 2px;
+            box-shadow: 0 0 15px rgba(160, 196, 255, 0.6); z-index: 0;
+        }
+
+        .ship-icon {
+            position: absolute; right: -10px; top: 50%; font-size: 40px;
+            transform: translateY(-60%) scaleX(-1); z-index: 5;
+            filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.1));
+            animation: sail 3s ease-in-out infinite alternate;
+        }
+        @keyframes sail { from { transform: translateY(-60%) scaleX(-1) rotate(0deg); } to { transform: translateY(-65%) scaleX(-1) rotate(3deg); } }
+
+        /* --- Event Items Structure --- */
+        .events-distributor {
+            position: absolute; top: 0; left: 2%; width: 96%; height: 100%;
+            display: flex; justify-content: space-between; align-items: center; z-index: 1;
+        }
+
+        .event-wrapper {
+            position: relative; width: 2px; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        /* The Center Dot on the horizon */
+        .center-dot {
+            width: 14px; height: 14px; border-radius: 50%; background: #fff;
+            border: 3px solid var(--timeline-color); position: absolute;
+            top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2; transition: all 0.3s ease;
+        }
+
+        /* The Vertical Connector Line (Stem) */
+        .vertical-stem {
+            position: absolute; left: 50%; width: 2px; background: var(--timeline-color);
+            opacity: 0.6; transform: translateX(-50%); z-index: 1; transition: all 0.5s ease;
+        }
+
+        /* The Content Box - General Style */
+        .content-box {
+            position: absolute;
+            /* MODIFIED: Increased vertical padding for taller look */
+            padding: 15px 10px; 
+            border-radius: 12px;
+            text-align: center; backdrop-filter: blur(15px); border: 2px solid transparent;
+            opacity: 0; transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 3; display: flex; flex-direction: column; gap: 4px;
+        }
+        
+        /* Hover effects */
+        .event-wrapper:hover .center-dot { transform: translate(-50%, -50%) scale(1.4); }
+        .event-wrapper:hover .content-box { transform: scale(1.05) !important; z-index: 10; }
+
+
+        /* --- Alternating Positions (MODIFIED: Closer to center) --- */
+        /* Changed top from 15% to 25% to bring start of stem closer */
+        .pos-top .vertical-stem { bottom: 50%; top: 25%; } 
+        /* Changed bottom from 85% to 75% to bring box closer */
+        .pos-top .content-box { bottom: 75%; transform: translateY(30px); }
+
+        /* Changed bottom from 15% to 25% to bring start of stem closer */
+        .pos-bottom .vertical-stem { top: 50%; bottom: 25%; }
+        /* Changed top from 85% to 75% to bring box closer */
+        .pos-bottom .content-box { top: 75%; transform: translateY(-30px); }
+
+        /* --- Category Specific Styling for Nodes --- */
+
+        /* Type A: ACHIEVED (Deep Blue & Gold) */
+        .type-A .center-dot { border-color: var(--ach-gold); }
+        .event-wrapper.type-A:hover .center-dot { background: var(--ach-gold) !important; }
+
+        .type-A .vertical-stem { background: var(--ach-gold); opacity: 0.7; }
+        
+        .type-A .content-box {
+            background: var(--ach-blue-bg);
+            border-color: var(--ach-gold);
+            color: var(--ach-gold);
+            box-shadow: 0 8px 32px rgba(15, 44, 103, 0.4);
+        }
+        .type-A .date-text { opacity: 0.9; font-weight: normal; text-shadow: 0 1px 2px rgba(0,0,0,0.8);}
+        .type-A .desc-text { text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+
+
+        /* Type E: ENCOUNTERED (Pastel Pink/Red) */
+        .type-E .center-dot { border-color: var(--enc-border); }
+        .event-wrapper.type-E:hover .center-dot { background: var(--enc-border); }
+
+        .type-E .vertical-stem { background: var(--enc-border); }
+        .type-E .content-box {
+            background: var(--enc-bg); border-color: var(--enc-border); color: var(--enc-text);
+            box-shadow: 0 8px 32px rgba(252, 129, 129, 0.2);
+        }
+
+        /* Typography */
+        .date-text { font-size: 0.8rem; font-weight: 700; opacity: 0.8; letter-spacing: 0.5px;}
+        .desc-text { font-size: 0.9rem; font-weight: 600; line-height: 1.4; }
+
+        /* Animation trigger class */
+        .is-visible { opacity: 1 !important; transform: translateY(0) scale(1) !important; }
+
+        /* Empty State */
+        .empty-message {
+            position: absolute; top: 40%; font-size: 1.2rem; color: var(--text-dark);
+            background: rgba(255,255,255,0.5); padding: 20px 40px; border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>FPMC 2025 回顧：航程紀實</h1>
+
+    <div class="controls">
+        <button id="btn-achieved" class="filter-btn">我們達成的 (Achieved)</button>
+        <button id="btn-encountered" class="filter-btn">我們遇到的 (Encountered)</button>
+    </div>
+
+    <div class="timeline-container">
+        <div class="horizon-line"></div>
+        <div class="ship-icon">🚢</div>
+        
+        <div id="events-distributor" class="events-distributor"></div>
+
+        <div id="empty-state" class="empty-message">
+            請點擊上方按鈕，開始回顧航程。
+        </div>
+    </div>
+
+    <script>
+        // 1. Data Source
+        const rawData = [
+            { date: '2024-12', displayDate: '24年12月底', desc: '無劇本船岸操演實施', type: 'A' },
+            { date: '2025-02', displayDate: '2月', desc: '發佈新版體系', type: 'A' },
+            { date: '2025-03', displayDate: '3月', desc: '台北研討會', type: 'A' },
+            { date: '2025-05', displayDate: '5月', desc: 'PRE-TMSA', type: 'A' },
+            { date: '2025-06', displayDate: '6月', desc: 'FLOW表單及流程更新', type: 'A' },
+            { date: '2025-06', displayDate: '6月', desc: 'CM遭滯留', type: 'E' },
+            { date: '2025-07', displayDate: '7月', desc: 'CK發生碰撞', type: 'E' },
+            { date: '2025-08', displayDate: '8月', desc: '貨櫃4售船', type: 'A' },
+            { date: '2025-08', displayDate: '8月', desc: '簽訂MR新造', type: 'A' },
+            { date: '2025-09', displayDate: '9月', desc: 'EXXONMOBIL TMSA', type: 'A' },
+            { date: '2025-10-01', displayDate: '10月1日', desc: 'CK售船', type: 'A' },
+            { date: '2025-10', displayDate: '10月', desc: 'F33發生擦碰', type: 'E' },
+            { date: '2025-11', displayDate: '11月', desc: '船舶證書管理系統的功能完善和新增', type: 'A' },
+            { date: '2025-11', displayDate: '11月', desc: '開始啟動交叉訪船機制', type: 'A' },
+            { date: '2025-11', displayDate: '11月', desc: 'BG遭滯留', type: 'E' },
+            { date: '2025-11', displayDate: '11月', desc: 'B201遭擦撞', type: 'E' },
+            { date: '2025-11-25', displayDate: '11月下旬', desc: '收到AMSA信函通知', type: 'E' },
+            { date: '2025-12-05', displayDate: '12月初', desc: '啟動散貨船隊大排查', type: 'A' },
+            // MODIFIED: Changed text below
+            { date: '2025-12-15', displayDate: '12月中', desc: '台北研討會，管理層發佈了提升管理的重要指示', type: 'A' },
+            { date: '2025-12-25', displayDate: '12月左右', desc: '船隊SEEMP Part II/III & EU MRV Plan通過審批', type: 'A' },
+            { date: '2025-12-28', displayDate: '12月', desc: '經過修訂後的船舶Safety Walk推行', type: 'A' },
+            { date: '2025-12-30', displayDate: '12月底', desc: '開始自主審圖', type: 'A' }
+        ];
+
+        let filterState = { showAchieved: false, showEncountered: false };
+        const distributor = document.getElementById('events-distributor');
+        const emptyState = document.getElementById('empty-state');
+        const btnAchieved = document.getElementById('btn-achieved');
+        const btnEncountered = document.getElementById('btn-encountered');
+
+        function renderTimeline() {
+            distributor.innerHTML = '';
+            
+            const filteredData = rawData.filter(item => {
+                if (item.type === 'A' && filterState.showAchieved) return true;
+                if (item.type === 'E' && filterState.showEncountered) return true;
+                return false;
+            });
+
+            if (filteredData.length === 0) {
+                emptyState.style.display = 'block';
+                emptyState.textContent = (filterState.showAchieved === false && filterState.showEncountered === false) 
+                    ? "請點擊上方按鈕選擇類別，開始回顧航程。" 
+                    : "沒有符合當前篩選條件的航程節點。";
+                return;
+            } else {
+                emptyState.style.display = 'none';
+            }
+
+            // MODIFIED: Reverted back to narrower widths
+            let boxWidth = 140;
+            if (filteredData.length > 15) boxWidth = 110;
+            if (filteredData.length > 20) boxWidth = 90;
+            
+            filteredData.forEach((item, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.classList.add('event-wrapper');
+                // Add type class for styling
+                wrapper.classList.add(item.type === 'A' ? 'type-A' : 'type-E');
+                // Add position class
+                const posClass = index % 2 === 0 ? 'pos-top' : 'pos-bottom';
+                wrapper.classList.add(posClass);
+
+                wrapper.innerHTML = `
+                    <div class="content-box" style="width: ${boxWidth}px;">
+                        <span class="date-text">${item.displayDate}</span>
+                        <span class="desc-text">${item.desc}</span>
+                    </div>
+                    <div class="vertical-stem"></div>
+                    <div class="center-dot"></div>
+                `;
+
+                distributor.appendChild(wrapper);
+
+                const box = wrapper.querySelector('.content-box');
+                const stem = wrapper.querySelector('.vertical-stem');
+                stem.style.height = '0%';
+
+                // Staggered animation
+                setTimeout(() => {
+                    box.classList.add('is-visible');
+                    // MODIFIED: Reduced stem height animation from 35% to 25% to match closer positioning
+                    stem.style.height = '25%'; 
+                }, index * 60 + 50);
+            });
+        }
+
+        btnAchieved.addEventListener('click', () => {
+            filterState.showAchieved = !filterState.showAchieved;
+            btnAchieved.classList.toggle('active');
+            renderTimeline();
+        });
+
+        btnEncountered.addEventListener('click', () => {
+            filterState.showEncountered = !filterState.showEncountered;
+            btnEncountered.classList.toggle('active');
+            renderTimeline();
+        });
+
+        renderTimeline();
+
+    </script>
+</body>
+</html>
